@@ -3,11 +3,11 @@ import { ComposeFactory } from 'dojo-compose/compose';
 import createStateful, { Stateful, State, StatefulOptions } from './createStateful';
 import createCachedRenderMixin, { CachedRenderMixin } from './createCachedRenderMixin';
 
-export interface FormMixinOptions {
+export interface FormFieldMixinOptions {
 	type?: string;
 }
 
-export interface FormMixinState<V> extends State {
+export interface FormFieldMixinState<V> extends State {
 	/**
 	 * The form widget's name
 	 */
@@ -17,22 +17,27 @@ export interface FormMixinState<V> extends State {
 	 * The current value
 	 */
 	value?: V;
+
+	/**
+	 * Whether the field is currently disabled or not
+	 */
+	disabled?: boolean;
 }
 
-export interface FormMixin<V, S extends FormMixinState<V>> extends Stateful<S>, CachedRenderMixin<S> {
+export interface FormFieldMixin<V, S extends FormFieldMixinState<V>> extends Stateful<S>, CachedRenderMixin<S> {
 	/**
 	 * The HTML type for this widget
 	 */
 	type?: string;
 
 	/**
-	 * The value of this form widget, which is read from the widget state
+	 * The string value of this form widget, which is read from the widget state
 	 */
 	value?: string;
 }
 
-export interface FormMixinFactory extends ComposeFactory<FormMixin<any, FormMixinState<any>>, FormMixinOptions> {
-	<V, S extends FormMixinState<V>>(options?: StatefulOptions<S>): FormMixin<V, S>;
+export interface FormMixinFactory extends ComposeFactory<FormFieldMixin<any, FormFieldMixinState<any>>, FormFieldMixinOptions> {
+	<V, S extends FormFieldMixinState<V>>(options?: StatefulOptions<S>): FormFieldMixin<V, S>;
 }
 
 const createFormMixin: FormMixinFactory = createStateful
@@ -44,10 +49,12 @@ const createFormMixin: FormMixinFactory = createStateful
 			},
 
 			set value(value: string) {
-				this.setState({ value });
+				if (value !== this.state.value) {
+					this.setState({ value });
+				}
 			}
 		},
-		initializer(instance: FormMixin<any, FormMixinState<any>>, options: FormMixinOptions) {
+		initializer(instance: FormFieldMixin<any, FormFieldMixinState<any>>, options: FormFieldMixinOptions) {
 			if (options && options.type) {
 				instance.type = options.type;
 			}
@@ -69,6 +76,9 @@ const createFormMixin: FormMixinFactory = createStateful
 					}
 					if (this.state.name) {
 						overrides.name = this.state.name;
+					}
+					if (this.state.disabled !== 'undefined') {
+						overrides['disabled'] = this.state.disabled;
 					}
 
 					args[0] = overrides;

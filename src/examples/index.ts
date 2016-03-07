@@ -1,5 +1,6 @@
 import createWidget from 'src/createWidget';
 import createButton from 'src/createButton';
+import createTextInput from 'src/createTextInput';
 import { attach } from 'src/util/vdom';
 
 createWidget({
@@ -18,10 +19,16 @@ const button = createButton({
 	}
 });
 
+const firstName = createTextInput({
+	state: {
+		name: 'first-name',
+		id: 'fist-name',
+		value: 'hello'
+	}
+});
+
 button.on('click', (e: MouseEvent) => {
-	button.setState({
-		label: 'I was clicked!'
-	});
+	console.log(firstName.value);
 	return true;
 });
 
