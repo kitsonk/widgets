@@ -1,5 +1,5 @@
 import createWidget from 'src/createWidget';
-import createButton, { ButtonState } from 'src/createButton';
+import createButton from 'src/createButton';
 import { attach } from 'src/util/vdom';
 
 createWidget({
@@ -10,7 +10,7 @@ createWidget({
 	tagName: 'h1'
 });
 
-const button = createButton<ButtonState>({
+const button = createButton({
 	state: {
 		id: 'bar',
 		label: 'A brave new world...',

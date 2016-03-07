@@ -1,37 +1,21 @@
-import { VNodeProperties } from 'maquette/maquette';
-import createWidget, { WidgetState, WidgetFactory, WidgetOptions, Widget } from './createWidget';
+import { ComposeFactory } from 'dojo-compose/compose';
+import createWidget, { Widget, WidgetState, WidgetOptions } from './createWidget';
+import createFormMixin, { FormMixin, FormMixinState, FormMixinOptions } from './mixins/createFormMixin';
 
-/* should create a helper function that creates a mixin form descriptor */
+export interface ButtonState extends WidgetState, FormMixinState<string> { }
 
-export interface ButtonState extends WidgetState {
-	name?: string;
-}
+export interface ButtonOptions extends WidgetOptions<ButtonState>, FormMixinOptions { }
 
-export interface ButtonFactory extends WidgetFactory {
-	<S extends ButtonState>(options?: WidgetOptions<S>): Widget<S>;
-}
+export interface Button extends Widget<ButtonState>, FormMixin<string, ButtonState> { }
 
-const createButton: ButtonFactory = createWidget.
-	mixin({
+export interface ButtonFactory extends ComposeFactory<Button, ButtonOptions> { }
+
+const createButton: ButtonFactory = createWidget
+	.mixin({
+		mixin: createFormMixin,
 		initializer(instance) {
 			instance.tagName = 'button';
-		},
-		aspectAdvice: {
-			before: {
-				getNodeAttributes(...args: any[]) {
-					let overrides: VNodeProperties = args[0];
-					if (!overrides) {
-						overrides = {};
-					}
-					overrides['type'] = 'button';
-					/* this should be folded into a form factory */
-					if (this.state.name) {
-						overrides.name = this.state.name;
-					}
-					args[0] = overrides;
-					return args;
-				}
-			}
+			instance.type = 'button';
 		}
 	});
 
