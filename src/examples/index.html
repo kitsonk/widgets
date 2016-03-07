@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="../themes/basic/basic.css">
+	<title>dojo-widget Examples</title>
+</head>
+<body class="basic">
+	<h1>dojo-widget Examples</h1>
+	<script src="../../../node_modules/dojo-loader/loader.min.js"></script>
+	<script>
+		require.config({
+			baseUrl: '../../..',
+			packages: [
+				{ name: 'src', location: '_build/src' },
+				{ name: 'tests', location: '_build/tests' },
+				{ name: 'node_modules', location: '_build/node_modules' },
+				{ name: 'dojo', location: 'node_modules/intern/node_modules/dojo' },
+				{ name: 'dojo-compose', location: 'node_modules/dojo-compose' },
+				{ name: 'dojo-core', location: 'node_modules/dojo-core' },
+				{ name: 'immutable', location: 'node_modules/immutable/dist' },
+				{ name: 'maquette', location: 'node_modules/maquette/dist' },
+				{ name: 'rxjs', location: 'node_modules/@reactivex/rxjs/dist/amd' }
+			]
+		});
+
+		require([ 'src/examples/index' ], function () {});
+	</script>
+</body>
+</html>

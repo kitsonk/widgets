@@ -13,6 +13,7 @@ function mixin(destination) {
 module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks('grunt-contrib-copy');
+	grunt.loadNpmTasks('grunt-contrib-stylus');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-release');
 	grunt.loadNpmTasks('grunt-text-replace');
@@ -41,14 +42,16 @@ module.exports = function (grunt) {
 	});
 	var packageJson = grunt.file.readJSON('package.json');
 	var staticTestFiles = [ 'tests/**', '!tests/**/*.js*' ];
+	var staticExampleFiles = [ 'src/examples/**', '!src/examples/**/*.js' ];
 
 	grunt.initConfig({
 		name: packageJson.name,
 		version: packageJson.version,
 		tsconfig: tsconfig,
 		tsconfigContent: tsconfigContent,
+		packageJson: packageJson,
 		all: [ '<%= tsconfig.filesGlob %>' ],
-		skipTests: [ '<%= all %>' , '!tests/**/*.ts' ],
+		skipTestsAndExamples: [ '<%= all %>' , '!tests/**/*.ts', '!src/examples/**/*.ts' ],
 		devDirectory: '<%= tsconfig.compilerOptions.outDir %>',
 		istanbulIgnoreNext: '/* istanbul ignore next */',
 
@@ -92,6 +95,12 @@ module.exports = function (grunt) {
 				src: staticTestFiles,
 				dest: '<%= devDirectory %>'
 			},
+			staticExampleFiles: {
+				expand: true,
+				cwd: '.',
+				src: staticExampleFiles,
+				dest: '<%= devDirectory %>'
+			},
 			typings: {
 				expand: true,
 				cwd: 'typings/',
@@ -109,7 +118,7 @@ module.exports = function (grunt) {
 				options: {
 					out: 'dist/typings/<%= name %>/<%= name %>-<%= version %>.d.ts'
 				},
-				src: [ '<%= skipTests %>' ]
+				src: [ '<%= skipTestsAndExamples %>' ]
 			}
 		},
 
@@ -190,6 +199,18 @@ module.exports = function (grunt) {
 			}
 		},
 
+		stylus: {
+			dev: {
+				options: {},
+				files: [ {
+					expand: true,
+					src: 'src/themes/**/*.styl',
+					ext: '.css',
+					dest: '_build/'
+				} ]
+			}
+		},
+
 		ts: {
 			options: tsOptions,
 			dev: {
@@ -204,7 +225,7 @@ module.exports = function (grunt) {
 					inlineSources: true
 				},
 				outDir: 'dist',
-				src: [ '<%= skipTests %>' ]
+				src: [ '<%= skipTestsAndExamples %>' ]
 			}
 		},
 
@@ -216,7 +237,8 @@ module.exports = function (grunt) {
 				src: [
 					'<%= all %>',
 					'!typings/**/*.ts',
-					'!tests/typings/**/*.ts'
+					'!tests/typings/**/*.ts',
+					'!node_modules/**/*.ts'
 				]
 			}
 		},
@@ -302,7 +324,9 @@ module.exports = function (grunt) {
 	grunt.registerTask('dev', [
 		'tslint',
 		'ts:dev',
+		'stylus:dev',
 		'copy:staticTestFiles',
+		'copy:staticExampleFiles',
 		'replace:addIstanbulIgnore',
 		'updateTsconfig'
 	]);
@@ -313,7 +337,8 @@ module.exports = function (grunt) {
 		'rewriteSourceMaps',
 		'copy:typings',
 		'copy:staticFiles',
-		'dtsGenerator:dist'
+		'dtsGenerator:dist',
+		'updatePackageJson'
 	]);
 	grunt.registerTask('test-proxy', [ 'dev', 'intern:proxy' ]);
 	grunt.registerTask('default', [ 'clean', 'dev' ]);

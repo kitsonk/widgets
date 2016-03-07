@@ -4,11 +4,15 @@
 *.js.map
 !/*.js
 !/tasks/*.js
-!/_modules
 dist
 _build
-node_modules
+/node_modules/*
+!/node_modules/dojo-compose/
+!/node_modules/dojo-compose/*
+!/node_modules/dojo-core/
+!/node_modules/dojo-core/*
 bower_components
 tests/typings/dist/
 .baseDir.ts
 html-report
+*.lcov
