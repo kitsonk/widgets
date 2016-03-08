@@ -20,7 +20,12 @@
 				{ name: 'immutable', location: 'node_modules/immutable/dist' },
 				{ name: 'maquette', location: 'node_modules/maquette/dist' },
 				{ name: 'rxjs', location: 'node_modules/@reactivex/rxjs/dist/amd' }
-			]
+			],
+			map: {
+				'*': {
+					'maquette/maquette': 'maquette/maquette.min'
+				}
+			}
 		});
 
 		require([ 'src/examples/index' ], function () {});

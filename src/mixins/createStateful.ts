@@ -17,6 +17,7 @@ export interface StatefulOptions<S extends State> extends EventedOptions {
 export interface StateChangeEvent<S extends State> extends EventObject {
 	type: string;
 	state: S;
+	target: Stateful<S>;
 }
 
 export interface Stateful<S extends State> extends Evented {
@@ -55,7 +56,8 @@ const createStateful: StatefulFactory = compose({
 			const state = deepAssign(stateWeakMap.get(this), value);
 			this.emit({
 				type: 'statechange',
-				state
+				state,
+				target: this
 			});
 			return state;
 		}

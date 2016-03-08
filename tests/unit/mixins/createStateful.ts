@@ -2,6 +2,39 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import createStateful, { StateChangeEvent } from 'src/mixins/createStateful';
 
+let _hasStrictModeCache: boolean;
+
+/**
+ * Detects if the current runtime environment fully supports
+ * strict mode (IE9 does not).
+ */
+function hasStrictMode(): boolean {
+	if (_hasStrictModeCache !== undefined) {
+		return _hasStrictModeCache;
+	}
+	try {
+		const f = new Function(`return function f() {
+			'use strict';
+			var a = 021;
+			var b = function (eval) {}
+			var c = function (arguments) {}
+			function d(foo, foo) {}
+			function e(eval, arguments) {}
+			function eval() {}
+			function arguments() {}
+			function interface(){}
+			with (x) { }
+			try { eval++; } catch (arguments) {}
+			return { x: 1, y: 2, x: 1 }
+		}`);
+		f();
+	}
+	catch (err) {
+		return _hasStrictModeCache = true;
+	}
+	return _hasStrictModeCache = false;
+}
+
 registerSuite({
 	name: 'mixins/createStateful',
 	creation() {
@@ -32,11 +65,22 @@ registerSuite({
 		handle.destroy();
 	},
 	'state read only'() {
-		const stateful = createStateful();
+		const stateful = createStateful({
+			state: {
+				foo: 'foo'
+			}
+		});
 
-		assert.throws(() => {
+		if (hasStrictMode()) {
+			assert.throws(() => {
+				stateful.state = { foo: 'bar' };
+			}, TypeError);
+		}
+		else {
+			assert.deepEqual(stateful.state, { foo: 'foo' });
 			stateful.state = { foo: 'bar' };
-		}, TypeError);
+			assert.deepEqual(stateful.state, { foo: 'foo' });
+		}
 	},
 	'state on creation'() {
 		const stateful = createStateful({
