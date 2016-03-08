@@ -5,10 +5,10 @@ node_js:
 env:
   global:
     # Please get your own free key if you want to test yourself
-    - BROWSERSTACK_USERNAME: << USERNAME GOES HERE >>
-    - BROWSERSTACK_ACCESS_KEY: << ACCESS KEY GOES HERE >>
-    - SAUCE_USERNAME: << USERNAME GOES HERE >>
-    - SAUCE_ACCESS_KEY: << ACCESS KEY GOES HERE >>
+    - BROWSERSTACK_USERNAME: kitsonkelly1
+    - BROWSERSTACK_ACCESS_KEY: uEoWrS6XmTX4XSpxUm6Q
+    - SAUCE_USERNAME: core-ts-ci
+    - SAUCE_ACCESS_KEY: 735b17e8-adcd-436a-bc5e-f5bec5e91a64
 cache:
   directories:
     - node_modules
@@ -18,6 +18,6 @@ install:
 script:
   - "grunt"
   - "grunt intern:node --combined"
-  - "grunt intern:remote --combined"
+  - "grunt intern:saucelabs --combined"
   - "grunt remapIstanbul:ci"
   - "grunt uploadCoverage"
