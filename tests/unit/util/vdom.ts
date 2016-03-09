@@ -19,7 +19,7 @@ registerSuite({
 			}
 		});
 		const attachHandle = attach();
-		assert.strictEqual(document.body.childNodes.length, childNodeLength + 1);
+		assert.strictEqual(document.body.childNodes.length, childNodeLength + 1, 'child should have been added');
 		assert.strictEqual((<HTMLElement> document.body.lastChild).innerHTML, nodeText);
 		assert.strictEqual((<HTMLElement> document.body.lastChild).tagName.toLowerCase(), 'h2');
 		nodeText = 'bar';
@@ -29,11 +29,11 @@ registerSuite({
 			renderable.destroy().then(() => {
 				scheduleRender();
 				setTimeout(dfd.callback(() => {
-					assert.strictEqual(document.body.childNodes.length, childNodeLength);
+					assert.strictEqual(document.body.childNodes.length, childNodeLength, 'child should have been removed');
 					attachHandle.destroy();
-				}), 100);
+				}), 150);
 			});
-		}, 100);
+		}, 150);
 	},
 	'lifecycle'() {
 		const dfd = this.async();
@@ -48,9 +48,9 @@ registerSuite({
 			}
 		});
 		const addHandle = append(renderable, projector);
-		assert.strictEqual(div.childNodes.length, 0);
+		assert.strictEqual(div.childNodes.length, 0, 'there should be no children');
 		const attachHandle = attach(projector);
-		assert.strictEqual(div.childNodes.length, 1);
+		assert.strictEqual(div.childNodes.length, 1, 'a child should be added');
 		assert.strictEqual((<HTMLElement> div.firstChild).tagName.toLowerCase(), 'h1');
 		assert.strictEqual((<HTMLElement> div.firstChild).innerHTML, nodeText);
 		nodeText = 'foo';
@@ -60,10 +60,10 @@ registerSuite({
 			addHandle.destroy();
 			scheduleRender(projector);
 			setTimeout(dfd.callback(() => {
-				assert.strictEqual(div.childNodes.length, 0);
+				assert.strictEqual(div.childNodes.length, 0, 'the node should be removed');
 				attachHandle.destroy();
-			}), 100);
-		}, 100);
+			}), 150);
+		}, 150);
 	},
 	'reattach'() {
 		const projector = createProjector({});
