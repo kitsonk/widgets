@@ -36,11 +36,13 @@ const listItems = [
 	{ id: 5, label: 'norf' }
 ];
 
+const listState: ListState = {
+	id: 'list',
+	items: listItems
+};
+
 const list = createList({
-	state: <ListState> {
-		id: 'list',
-		items: listItems
-	}
+	state: listState
 });
 
 button.on('click', (e: MouseEvent) => {
@@ -50,7 +52,5 @@ button.on('click', (e: MouseEvent) => {
 	});
 	return true;
 });
-
-console.log(list);
 
 attach();

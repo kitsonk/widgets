@@ -1,22 +1,23 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { attach, add, clear, setRoot, scheduleRender } from 'src/util/vdom';
+import { attach, append, clear, setRoot, scheduleRender } from 'src/util/vdom';
 import { createProjector, h } from 'maquette/maquette';
 import createRenderable from 'src/mixins/createRenderable';
 
 registerSuite({
 	name: 'util/vdom',
+	'setup'() {
+		clear();
+	},
 	'default lifecycle'() {
 		const dfd = this.async();
 		const childNodeLength = document.body.childNodes.length;
-		clear();
 		let nodeText = 'foo';
 		const renderable = createRenderable({
 			render() {
 				return h('h2', [ nodeText ] );
 			}
 		});
-		const addHandle = add(renderable);
 		const attachHandle = attach();
 		assert.strictEqual(document.body.childNodes.length, childNodeLength + 1);
 		assert.strictEqual((<HTMLElement> document.body.lastChild).innerHTML, nodeText);
@@ -25,12 +26,13 @@ registerSuite({
 		scheduleRender();
 		setTimeout(() => {
 			assert.strictEqual((<HTMLElement> document.body.lastChild).innerHTML, nodeText);
-			addHandle.destroy();
-			scheduleRender();
-			setTimeout(dfd.callback(() => {
-				assert.strictEqual(document.body.childNodes.length, childNodeLength);
-				attachHandle.destroy();
-			}), 100);
+			renderable.destroy().then(() => {
+				scheduleRender();
+				setTimeout(dfd.callback(() => {
+					assert.strictEqual(document.body.childNodes.length, childNodeLength);
+					attachHandle.destroy();
+				}), 100);
+			});
 		}, 100);
 	},
 	'lifecycle'() {
@@ -45,7 +47,7 @@ registerSuite({
 				return h('h1', [ nodeText ]);
 			}
 		});
-		const addHandle = add(renderable, projector);
+		const addHandle = append(renderable, projector);
 		assert.strictEqual(div.childNodes.length, 0);
 		const attachHandle = attach(projector);
 		assert.strictEqual(div.childNodes.length, 1);

@@ -1,13 +1,13 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import * as immutable from 'immutable/immutable';
+import * as Immutable from 'immutable/immutable';
 import { h, createProjector } from 'maquette/maquette';
 import * as rx from 'rxjs/Rx';
 
 registerSuite({
 	name: 'integrations',
 	immutable() {
-		assert(immutable);
+		assert(Immutable);
 	},
 	maquette() {
 		const projector = createProjector({});

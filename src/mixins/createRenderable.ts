@@ -1,6 +1,6 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 import { Projector, VNode } from 'maquette/maquette';
-import { add } from '../util/vdom';
+import { append } from '../util/vdom';
 import createDestroyable, { Destroyable } from './createDestroyable';
 
 export interface RenderFunction {
@@ -55,7 +55,7 @@ const createRenderable: RenderableFactory = compose({
 					instance.tagName = options.tagName;
 				}
 			}
-			instance.own(add(instance));
+			instance.own(append(instance));
 		}
 	});
 

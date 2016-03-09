@@ -1,9 +1,8 @@
 import './has!dom-requestanimationframe?:maquette/maquette-polyfills.min';
 import { createProjector, VNode, Projector, h } from 'maquette/maquette';
-import Set from 'dojo-core/Set';
+import { List } from 'immutable/immutable';
 import WeakMap from 'dojo-core/WeakMap';
 import { Handle } from 'dojo-core/interfaces';
-import { forOf } from 'dojo-core/iterator';
 import compose from 'dojo-compose/compose';
 import { Renderable } from '../mixins/createRenderable';
 
@@ -19,7 +18,7 @@ interface ProjectorData {
 	/**
 	 * A set of renderable children
 	 */
-	children: Set<Renderable>;
+	children: List<Renderable>;
 
 	/**
 	 * The root element to merge with
@@ -51,16 +50,10 @@ interface ProjectorDataOptions {
  * VNodes.
  * @param set The set of renderables to map
  */
-function renderableSetToVNodeArray(set: Set<Renderable>): VNode[] {
-	const results: VNode[] = [];
-	forOf(set, (renderable) => {
-		/* just in case a render function has disappeared at runtime, not good throwing here,
-		 * we will just skip */
-		if (renderable.render) {
-			results.push(renderable.render());
-		}
-	});
-	return results;
+function renderableListToVNodeArray(list: List<Renderable>): VNode[] {
+	return list.map((value) => {
+			return value.render();
+		}).toArray();
 }
 
 /**
@@ -71,10 +64,10 @@ const createProjectorData = compose<ProjectorData, ProjectorDataOptions>({
 	root: null,
 	state: ProjectorState.Detached,
 	render(): VNode {
-		return h('div', renderableSetToVNodeArray(this.children));
+		return h('div', renderableListToVNodeArray(this.children));
 	}
 }, (instance, options) => {
-	instance.children = new Set<Renderable>();
+	instance.children = List<Renderable>();
 });
 
 /**
@@ -131,17 +124,87 @@ export function attach(projector: Projector = defaultProjector): Handle {
 }
 
 /**
- * Add a renderable to a projector
- * @param renderable The renderable object to attach
- * @param projector Optional Projector to attach, default one implied
+ * Append a renderable to a projector
+ * @param renderable The renderable object to append
+ * @param projector Optional Projector to append to, default one is implied
  */
-export function add(renderable: Renderable, projector: Projector = defaultProjector): Handle {
+export function append(renderable: Renderable, projector: Projector = defaultProjector): Handle {
+	let destroyed = false;
 	const projectorData = getProjectorData(projector);
-	projectorData.children.add(renderable);
+	projectorData.children = projectorData.children.push(renderable);
 	renderable.projector = projector;
 	return {
 		destroy() {
-			projectorData.children.delete(renderable);
+			if (destroyed) {
+				return;
+			}
+			const idx = projectorData.children.indexOf(renderable);
+			if (idx >= 0) {
+				projectorData.children = projectorData.children.delete(idx);
+			}
+			destroyed = true;
+			renderable.projector = undefined;
+			scheduleRender(projector);
+		}
+	};
+}
+
+function isNumber(value: any): value is number {
+	return typeof value === 'number';
+}
+
+/**
+ * Insert a renderable into a projector
+ * @param renderable The renderable object to insert
+ * @param position The position where the renderable should be inserted, either an index
+ *                 posistion or a string indicating the relative position
+ * @param reference When using `before` or `after` positions, the renderable to use as
+ *                  reference
+ * @param projector Optional Projector to insert into, default one is implied
+ */
+export function insert(renderable: Renderable, position: number | 'first' | 'last' | 'before' | 'after', reference?: Renderable, projector: Projector = defaultProjector): Handle {
+	let destroyed = false;
+	const projectorData = getProjectorData(projector);
+
+	let idx: number;
+	if (isNumber(position)) {
+		idx = position;
+	}
+	else {
+		switch (position) {
+		case 'first':
+			idx = 0;
+			break;
+		case 'last':
+			idx = projectorData.children.size;
+			break;
+		case 'before':
+			idx = projectorData.children.indexOf(reference);
+			if (idx === -1) {
+				throw new Error('reference not a child of projector');
+			}
+			break;
+		case 'after':
+			idx = projectorData.children.indexOf(reference) + 1;
+			if (idx === 0) {
+				throw new Error('reference not a child of projector');
+			}
+			break;
+		default:
+			throw Error(`Invalid position "${position}"`);
+		}
+	}
+	projectorData.children = projectorData.children.insert(idx, renderable);
+	return {
+		destroy() {
+			if (destroyed) {
+				return;
+			}
+			const idx = projectorData.children.indexOf(renderable);
+			if (idx > 0) {
+				projectorData.children = projectorData.children.delete(idx);
+			}
+			destroyed = true;
 			renderable.projector = undefined;
 			scheduleRender(projector);
 		}
@@ -154,7 +217,7 @@ export function add(renderable: Renderable, projector: Projector = defaultProjec
  */
 export function clear(projector: Projector = defaultProjector): void {
 	const projectorData = getProjectorData(projector);
-	projectorData.children.clear();
+	projectorData.children = projectorData.children.clear();
 	scheduleRender(projector);
 }
 
