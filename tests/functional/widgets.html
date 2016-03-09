@@ -18,11 +18,15 @@
 				{ name: 'dojo', location: 'node_modules/intern/node_modules/dojo' },
 				{ name: 'dojo-compose', location: 'node_modules/dojo-compose' },
 				{ name: 'dojo-core', location: 'node_modules/dojo-core' },
+				{ name: 'immutable', location: 'node_modules/immutable/dist' },
 				{ name: 'maquette', location: 'node_modules/maquette/dist' }
 			],
 			map: {
 				'*': {
 					'maquette/maquette': 'maquette/maquette.min'
+				},
+				'*': {
+					'immutable/immutable': 'immutable/immutable.min'
 				}
 			}
 		});
