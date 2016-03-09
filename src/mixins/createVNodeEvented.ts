@@ -3,8 +3,6 @@ import { on } from 'dojo-core/aspect';
 import { ComposeFactory } from 'dojo-compose/compose';
 import createEvented, { Evented, EventedOptions, EventedCallback } from './createEvented';
 
-// on(type: string, listener: EventedCallback<EventObject>): Handle
-
 export interface VNodeListeners {
 	ontouchcancel?(ev?: TouchEvent): boolean | void;
 	ontouchend?(ev?: TouchEvent): boolean | void;

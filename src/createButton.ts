@@ -12,11 +12,11 @@ export interface ButtonFactory extends ComposeFactory<Button, ButtonOptions> { }
 
 const createButton: ButtonFactory = createWidget
 	.mixin({
-		mixin: createFormFieldMixin,
-		initializer(instance) {
-			instance.tagName = 'button';
-			instance.type = 'button';
-		}
+		mixin: createFormFieldMixin
+	})
+	.extend({
+		tagName: 'button',
+		type: 'button'
 	});
 
 export default createButton;

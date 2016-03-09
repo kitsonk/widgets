@@ -10,12 +10,14 @@ const createTextInput = createWidget
 	.mixin({
 		mixin: createFormFieldMixin,
 		initializer(instance) {
-			instance.type = 'text';
-			instance.tagName = 'input';
 			instance.on('input', (event: TypedTargetEvent<HTMLInputElement>) => {
 				instance.value = event.target.value;
 			});
 		}
+	})
+	.extend({
+		type: 'text',
+		tagName: 'input'
 	});
 
 export default createTextInput;

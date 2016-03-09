@@ -1,3 +1,4 @@
+export * from 'dojo-core/has';
 import has, { add } from 'dojo-core/has';
 import global from 'dojo-core/global';
 
