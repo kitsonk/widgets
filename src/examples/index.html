@@ -5,33 +5,9 @@
 	<title>dojo-widget Examples</title>
 </head>
 <body class="basic">
+	<!-- Loading the dojo-loader (minified) -->
 	<script src="../../../node_modules/dojo-loader/loader.min.js"></script>
-	<script>
-		require.config({
-			baseUrl: '../../..',
-			packages: [
-				{ name: 'src', location: '_build/src' },
-				{ name: 'tests', location: '_build/tests' },
-				{ name: 'node_modules', location: '_build/node_modules' },
-				{ name: 'dojo', location: 'node_modules/intern/node_modules/dojo' },
-				{ name: 'dojo-compose', location: 'node_modules/dojo-compose' },
-				{ name: 'dojo-core', location: 'node_modules/dojo-core' },
-				{ name: 'immutable', location: 'node_modules/immutable/dist' },
-				{ name: 'maquette', location: 'node_modules/maquette/dist' },
-				{ name: 'reflect-metadata', location: 'node_modules/reflect-metadata' },
-				{ name: 'rxjs', location: 'node_modules/@reactivex/rxjs/dist/amd' }
-			],
-			map: {
-				'*': {
-					'maquette/maquette': 'maquette/maquette.min'
-				},
-				'*': {
-					'immutable/immutable': 'immutable/immutable.min'
-				}
-			}
-		});
-
-		require([ 'src/examples/index' ], function () {});
-	</script>
+	<!-- Loading the boot script -->
+	<script src="./boot.js"></script>
 </body>
 </html>

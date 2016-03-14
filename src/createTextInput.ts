@@ -17,9 +17,9 @@ const createTextInput: TextInputFactory = createWidget
 	.mixin({
 		mixin: createFormFieldMixin,
 		initializer(instance) {
-			instance.on('input', (event: TypedTargetEvent<HTMLInputElement>) => {
+			instance.own(instance.on('input', (event: TypedTargetEvent<HTMLInputElement>) => {
 				instance.value = event.target.value;
-			});
+			}));
 		}
 	})
 	.extend({
