@@ -4,11 +4,9 @@ import createListMixin, { ListMixin, ListMixinState } from './mixins/createListM
 
 export interface ListState extends WidgetState, ListMixinState { }
 
-export interface List<S extends ListState> extends Widget<S>, ListMixin<S> { }
+export interface List extends Widget<ListState>, ListMixin { }
 
-export interface ListFactory extends ComposeFactory<List<ListState>, WidgetOptions<ListState>> {
-	<S extends ListState>(options?: WidgetOptions<S>): List<S>;
-}
+export interface ListFactory extends ComposeFactory<List, WidgetOptions<ListState>> { }
 
 const createList: ListFactory = createWidget
 	.mixin(createListMixin);

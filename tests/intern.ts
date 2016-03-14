@@ -65,6 +65,7 @@ export const loaderOptions = {
 		{ name: 'dojo-core', location: 'node_modules/dojo-core' },
 		{ name: 'immutable', location: 'node_modules/immutable/dist' },
 		{ name: 'maquette', location: 'node_modules/maquette/dist' },
+		{ name: 'reflect-metadata', location: 'node_modules/reflect-metadata' },
 		{ name: 'rxjs', location: 'node_modules/@reactivex/rxjs/dist/amd' }
 	]
 };

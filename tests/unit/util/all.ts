@@ -1,1 +1,2 @@
+import './createMemoryStore';
 import './vdom';

@@ -8,6 +8,8 @@
 		"removeComments": false,
 		"sourceMap": true,
 		"target": "es5",
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
 		"moduleResolution": "classic"
 	},
 	"filesGlob": [
@@ -30,7 +32,10 @@
 		"./src/mixins/createRenderable.ts",
 		"./src/mixins/createStateful.ts",
 		"./src/mixins/createVNodeEvented.ts",
+		"./src/util/createMemoryStore.ts",
 		"./src/util/has.ts",
+		"./src/util/query.ts",
+		"./src/util/reflect.ts",
 		"./src/util/vdom.ts",
 		"./tests/functional/all.ts",
 		"./tests/functional/interactive.ts",
@@ -65,6 +70,7 @@
 		"./tests/unit/mixins/createStateful.ts",
 		"./tests/unit/mixins/createVNodeEvented.ts",
 		"./tests/unit/util/all.ts",
+		"./tests/unit/util/createMemoryStore.ts",
 		"./tests/unit/util/vdom.ts"
 	]
 }

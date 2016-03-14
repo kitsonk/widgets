@@ -1,12 +1,19 @@
-import createWidget from './createWidget';
-import createFormFieldMixin from './mixins/createFormFieldMixin';
+import { ComposeFactory } from 'dojo-compose/compose';
+import createWidget, { Widget, WidgetOptions } from './createWidget';
+import createFormFieldMixin, { FormFieldMixin, FormFieldMixinState, FormFieldMixinOptions } from './mixins/createFormFieldMixin';
 
 /* I suspect this needs to go somewhere else */
 export interface TypedTargetEvent<T extends EventTarget> extends Event {
 	target: T;
 }
 
-const createTextInput = createWidget
+export interface TextInputOptions extends WidgetOptions<FormFieldMixinState<string>>, FormFieldMixinOptions { }
+
+export interface TextInput extends Widget<FormFieldMixinState<string>>, FormFieldMixin<string, FormFieldMixinState<string>> { }
+
+export interface TextInputFactory extends ComposeFactory<TextInput, TextInputOptions> { }
+
+const createTextInput: TextInputFactory = createWidget
 	.mixin({
 		mixin: createFormFieldMixin,
 		initializer(instance) {

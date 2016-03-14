@@ -6,7 +6,7 @@ registerSuite({
 	name: 'createList',
 
 	construction() {
-		const list = createList<ListState>();
+		const list = createList();
 		const items = [
 			{ id: 1, label: 'foo' },
 			{ id: 2, label: 'bar' },

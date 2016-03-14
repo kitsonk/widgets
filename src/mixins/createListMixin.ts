@@ -16,7 +16,7 @@ export interface TagNames {
 	item: string;
 }
 
-export interface ListMixin<S extends ListMixinState> extends CachedRenderMixin<S> {
+export interface ListMixin extends CachedRenderMixin<ListMixinState> {
 	getChildrenNodes(): VNode[];
 	tagName: string;
 	tagNames: TagNames;

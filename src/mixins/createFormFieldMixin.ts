@@ -37,7 +37,7 @@ export interface FormFieldMixin<V, S extends FormFieldMixinState<V>> extends Sta
 }
 
 export interface FormMixinFactory extends ComposeFactory<FormFieldMixin<any, FormFieldMixinState<any>>, FormFieldMixinOptions> {
-	<V, S extends FormFieldMixinState<V>>(options?: StatefulOptions<S>): FormFieldMixin<V, S>;
+	<V>(options?: StatefulOptions<FormFieldMixinState<V>>): FormFieldMixin<V, FormFieldMixinState<V>>;
 }
 
 const createFormMixin: FormMixinFactory = createStateful
