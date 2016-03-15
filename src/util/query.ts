@@ -16,8 +16,8 @@ export interface OrderedQuery<T> extends Query<T> {
 	thenBy(name: string, ascending?: boolean): this;
 }
 
-export interface Query<T> {
-	where(condition: string | ((item: T, store: any) => boolean)): this;
+export interface Query<T> extends Promise<T> {
+	where(condition: Conditional): this;
 	filter<U>(callback: (item: T, store: any) => boolean): this;
 
 	select<U>(selection: string[] | ((item: T, store: any) => U)): Query<U>;
@@ -64,8 +64,25 @@ export interface Query<T> {
 	join(): this;
 }
 
-let query: Query<any>;
+interface ConditionalExpression extends Object { }
 
-query
-	.where('foo')
-	.select([ 'foo', 'bar' ]);
+interface Conditional {
+	expression: ConditionalExpression;
+}
+
+interface ConditionalOperator extends Conditional {
+	and(): Condition;
+	or(): Condition;
+}
+
+interface ConditionComparison<T> {
+	matches(condition: RegExp): ConditionalOperator;
+	equals(condition: T): ConditionalOperator;
+	contains(condition: T): ConditionalOperator;
+	lessThan(condition: T): ConditionalOperator;
+	greaterThan(condition: T): ConditionalOperator;
+}
+
+export interface Condition {
+	property(property: string): ConditionComparison<string>;
+}

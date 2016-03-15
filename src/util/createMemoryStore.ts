@@ -1,4 +1,5 @@
-import { OrderedMap } from 'immutable/immutable';
+import { OrderedMap, Map } from 'immutable/immutable';
+import { Observable, Observer } from 'rxjs/Rx';
 import { assign } from 'dojo-core/lang';
 import Promise, { isThenable } from 'dojo-core/Promise';
 import WeakMap from 'dojo-core/WeakMap';
@@ -22,6 +23,9 @@ export interface MemoryStore<T extends Object> {
 	idProperty: string | symbol;
 
 	get(id: StoreIndex): MemoryStorePromise<T>;
+
+	observe(id: StoreIndex): Observable<T>;
+
 	put(item: T, options?: MemoryStorePragma): MemoryStorePromise<T>;
 	add(item: T, options?: MemoryStorePragma): MemoryStorePromise<T>;
 
@@ -32,6 +36,7 @@ export interface MemoryStore<T extends Object> {
 }
 
 const dataWeakMap = new WeakMap<MemoryStore<Object>, OrderedMap<StoreIndex, Object>>();
+const observerWeakMap = new WeakMap<MemoryStore<Object>, Map<StoreIndex, Observer<Object>[]>>();
 
 export interface MemoryStoreFactory extends ComposeFactory<MemoryStore<Object>, MemoryStoreOptions<Object>> {
 	<T extends Object>(options?: MemoryStoreOptions<T>): MemoryStore<T>;
@@ -68,8 +73,30 @@ const createMemoryStore: MemoryStoreFactory = compose({
 
 	get(id: StoreIndex): MemoryStorePromise<Object> {
 		const data = dataWeakMap.get(this);
-		return wrapResult(this, data && data.get(id));
+		return wrapResult(this, data && data.get(String(id)));
 	},
+
+	observe(id: StoreIndex): Observable<Object> {
+		const store = this;
+		return new Observable(function subscribe(observer: Observer<Object>) {
+			store.get(String(id)).then((item: Object) => {
+				if (item) {
+					observer.next(item);
+					const observers = observerWeakMap.get(store);
+					const observerArray: Observer<Object>[] = observers && observers.has(String(id)) ? observers.get(String(id)) : [];
+					observerArray.push(observer);
+					observerWeakMap.set(store, (observers ? observers : Map<StoreIndex, Observer<Object>[]>()).set(String(id), observerArray));
+				}
+				else {
+					observer.complete();
+				}
+			}, (error: Error) => {
+				console.log('reject');
+				observer.error(error);
+			});
+		});
+	},
+
 	put(item: { [property: string]: number | string; }, options?: MemoryStorePragma): MemoryStorePromise<Object> {
 		const data = dataWeakMap.get(this);
 		const idProperty = this.idProperty;
@@ -80,28 +107,50 @@ const createMemoryStore: MemoryStoreFactory = compose({
 			return wrapError(this, Error(`Duplicate id "${id}" when pragma "replace" is false`));
 		}
 		item[idProperty] = id;
-		dataWeakMap.set(this, (data ? data : OrderedMap<StoreIndex, Object>()).set(id, item));
+		dataWeakMap.set(this, (data ? data : OrderedMap<StoreIndex, Object>()).set(String(id), item));
+
+		const observers = observerWeakMap.get(this);
+		if (observers && observers.has(String(id))) {
+			observers.get(String(id)).forEach((observer) => observer.next(item));
+		}
 		return wrapResult(this, item);
 	},
+
 	add(item: Object, options?: MemoryStorePragma): MemoryStorePromise<Object> {
 		return this.put(item, assign(options ? options : {}, { replace: false }));
 	},
+
 	delete(item: StoreIndex | { [property: string]: number | string; }): MemoryStorePromise<boolean> {
-		const idProperty: string = this.idProperty;
-		const data = dataWeakMap.get(this);
+		const store = this;
+
+		/**
+		 * Complete any observers associated with this items id
+		 */
+		function completeObservable(id: StoreIndex) {
+			const observers = observerWeakMap.get(store);
+			if (observers && observers.has(String(id))) {
+				observers.get(String(id)).forEach((observer) => observer.complete());
+				observerWeakMap.set(store, observers.delete(id));
+			}
+		}
+
+		const idProperty: string = store.idProperty;
+		const data = dataWeakMap.get(store);
 		if (typeof item === 'object') {
-			if (idProperty in item && data && data.has(item[idProperty])) {
-				dataWeakMap.set(this, data.delete(item[idProperty]));
-				return wrapResult(this, true);
+			if (idProperty in item && data && data.has(String(item[idProperty]))) {
+				dataWeakMap.set(store, data.delete(String(item[idProperty])));
+				completeObservable(item[idProperty]);
+				return wrapResult(store, true);
 			}
 		}
 		else {
-			if (data && data.has(item)) {
-				dataWeakMap.set(this, data.delete(item));
-				return wrapResult(this, true);
+			if (data && data.has(String(item))) {
+				dataWeakMap.set(store, data.delete(String(item)));
+				completeObservable(item);
+				return wrapResult(store, true);
 			}
 		}
-		return wrapResult(this, false);
+		return wrapResult(store, false);
 	},
 	fromArray(items: Object[]): MemoryStorePromise<void> {
 		const map: Object = {};
@@ -109,7 +158,7 @@ const createMemoryStore: MemoryStoreFactory = compose({
 		items.forEach((item: { [prop: string]: StoreIndex }, idx: number) => {
 			const id = idProperty in item ? item[idProperty] : idx;
 			item[idProperty] = id;
-			(<any> map)[idProperty] = item;
+			(<any> map)[id] = item;
 		});
 		dataWeakMap.set(this, OrderedMap<StoreIndex, Object>(map));
 		return wrapResult(this, undefined);
