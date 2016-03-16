@@ -41,6 +41,11 @@ export interface Stateful<S extends State> extends Evented {
 	 */
 	setState(value: S): S;
 
+	/**
+	 * Observe the state from an object that allows the observation
+	 * @param id         The ID in the target obserable to observe
+	 * @param observable The taget that returns an obserable inteface when observing an ID
+	 */
 	observeState(id: string, observable: ObservableState<S>): Handle;
 
 	/**

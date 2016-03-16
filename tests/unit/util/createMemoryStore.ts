@@ -1,6 +1,6 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import createMemoryStore from 'src/util/createMemoryStore';
+import createMemoryStore, { fromArray } from 'src/util/createMemoryStore';
 
 registerSuite({
 	name: 'util/createMemoryStore',
@@ -12,6 +12,7 @@ registerSuite({
 			assert.isFunction(store.get);
 			assert.isFunction(store.put);
 			assert.isFunction(store.delete);
+			assert.isFunction(store.patch);
 			assert.isFunction(store.fromArray);
 		},
 		'options idProperty'() {
@@ -83,6 +84,36 @@ registerSuite({
 					});
 				});
 			});
+	},
+	'static fromArray()'() {
+		const store = fromArray([
+			{ id: 1, foo: 'bar' },
+			{ id: 2, foo: 'baz' },
+			{ id: 3, foo: 'qat' },
+			{ id: 4, foo: 'qux' }
+		]);
+
+		return store.get(2).then((item) => {
+			assert.deepEqual(item, { id: 2, foo: 'baz' });
+			return store.get(4).then((item) => {
+				assert.deepEqual(item, { id: 4, foo: 'qux' });
+			});
+		});
+	},
+	'patch()': {
+		'partial'() {
+			const store = createMemoryStore({
+				data: [
+					{ id: 1, foo: 'bar' }
+				]
+			});
+
+			return store
+				.patch({ foo: 'qat', bar: 1 }, { id: 1 })
+				.then((item) => {
+					assert.deepEqual(item, { id: 1, foo: 'qat', bar: 1 });
+				});
+		}
 	},
 	'observer()': {
 		'subscribe'() {
