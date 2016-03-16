@@ -1,5 +1,7 @@
 import { h, VNode } from 'maquette/maquette';
+import { ComposeFactory } from 'dojo-compose/compose';
 import createCachedRenderMixin, { CachedRenderMixin, CachedRenderState } from './createCachedRenderMixin';
+import { StatefulOptions } from './createStateful';
 
 export interface ListStateItem {
 	[property: string]: any;
@@ -22,7 +24,7 @@ export interface ListMixin extends CachedRenderMixin<ListMixinState> {
 	tagNames: TagNames;
 }
 
-const createListMixin = createCachedRenderMixin
+const createListMixin: ComposeFactory<ListMixin, StatefulOptions<ListMixinState>> = createCachedRenderMixin
 	.mixin({
 		mixin: {
 			getChildrenNodes(): VNode[] {

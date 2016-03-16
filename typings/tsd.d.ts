@@ -11,11 +11,9 @@ declare module 'immutable/immutable' {
 }
 
 declare module 'maquette/maquette' {
-	import * as maquette from 'node_modules/maquette/dist/maquette';
-	export = maquette;
+	export * from 'node_modules/maquette/dist/maquette';
 }
 
 declare module 'rxjs/Rx' {
-	import * as Rx from 'node_modules/@reactivex/rxjs/dist/cjs/Rx';
-	export = Rx;
+	export * from 'node_modules/@reactivex/rxjs/dist/cjs/Rx';
 }

@@ -64,18 +64,18 @@ export interface Query<T> extends Promise<T> {
 	join(): this;
 }
 
-interface ConditionalExpression extends Object { }
+export interface ConditionalExpression extends Object { }
 
-interface Conditional {
+export interface Conditional {
 	expression: ConditionalExpression;
 }
 
-interface ConditionalOperator extends Conditional {
+export interface ConditionalOperator extends Conditional {
 	and(): Condition;
 	or(): Condition;
 }
 
-interface ConditionComparison<T> {
+export interface ConditionComparison<T> {
 	matches(condition: RegExp): ConditionalOperator;
 	equals(condition: T): ConditionalOperator;
 	contains(condition: T): ConditionalOperator;

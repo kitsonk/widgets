@@ -1,4 +1,4 @@
-import compose from 'dojo-compose/compose';
+import compose, { ComposeFactory } from 'dojo-compose/compose';
 import Promise from 'dojo-core/Promise';
 import { Handle } from 'dojo-core/interfaces';
 import WeakMap from 'dojo-core/WeakMap';
@@ -25,7 +25,7 @@ export interface Destroyable {
 	destroy(): Promise<boolean>;
 }
 
-const createDestroyable = compose<Destroyable, any>({
+const createDestroyable: ComposeFactory<Destroyable, any> = compose({
 	own(handle: Handle): Handle {
 		const handles = handlesWeakMap.get(this);
 		handles.push(handle);

@@ -1,10 +1,11 @@
 import { h, VNode, VNodeProperties } from 'maquette/maquette';
+import { ComposeFactory } from 'dojo-compose/compose';
 import { EventObject, Handle } from 'dojo-core/interfaces';
 import { assign } from 'dojo-core/lang';
 import Map from 'dojo-core/Map';
 import WeakMap from 'dojo-core/WeakMap';
 import { scheduleRender } from '../util/vdom';
-import createStateful, { State, Stateful, StateChangeEvent } from './createStateful';
+import createStateful, { State, Stateful, StateChangeEvent, StatefulOptions } from './createStateful';
 import createRenderable, { Renderable } from './createRenderable';
 import { EventedCallback } from './createEvented';
 import createVNodeEvented, { VNodeEvented } from './createVNodeEvented';
@@ -54,7 +55,7 @@ const dirtyMap = new Map<CachedRenderMixin<CachedRenderState>, boolean>();
  */
 const renderCache = new WeakMap<CachedRenderMixin<CachedRenderState>, VNode>();
 
-const createCachedRenderMixin = createStateful
+const createCachedRenderMixin: ComposeFactory<CachedRenderMixin<CachedRenderState>, StatefulOptions<CachedRenderState>> = createStateful
 	.mixin(createRenderable)
 	.mixin(createVNodeEvented)
 	.mixin({
