@@ -1,3 +1,4 @@
+import { Observable } from 'rxjs/Rx';
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 import WeakMap from 'dojo-core/WeakMap';
 import { deepAssign } from 'dojo-core/lang';
@@ -10,8 +11,14 @@ export interface State {
 	[id: string]: any;
 }
 
+export interface ObservableState<S> {
+	observe(id: string): Observable<S>;
+}
+
 export interface StatefulOptions<S extends State> extends EventedOptions {
 	state?: S;
+	id?: string;
+	stateFrom?: ObservableState<S>;
 }
 
 export interface StateChangeEvent<S extends State> extends EventObject {
@@ -33,6 +40,8 @@ export interface Stateful<S extends State> extends Evented {
 	 * @param value The partial state to be set
 	 */
 	setState(value: S): S;
+
+	observeState(id: string, observable: ObservableState<S>): Handle;
 
 	/**
 	 * Add a listener for the event
@@ -60,12 +69,33 @@ const createStateful: StatefulFactory = compose({
 				target: this
 			});
 			return state;
+		},
+
+		observeState(id: string, observable: ObservableState<any>): Handle {
+			const stateful: Stateful<any> = this;
+			let subscription = observable.observe(id).subscribe((item: Object) => {
+				stateful.setState(item);
+			});
+			return {
+				destroy() {
+					subscription && subscription.unsubscribe();
+					subscription = undefined;
+				}
+			};
 		}
 	}, (instance: Stateful<State>, options: StatefulOptions<State>) => {
 		const state = {};
 		stateWeakMap.set(instance, state);
-		if (options && options.state) {
-			instance.setState(options.state);
+		if (options) {
+			if (options.state) {
+				instance.setState(options.state);
+			}
+			if (options.id && options.stateFrom) {
+				instance.own(instance.observeState(options.id, options.stateFrom));
+			}
+			else if (options.id || options.stateFrom) {
+				throw new TypeError('Factory requires options "id" and "stateFrom" to be supplied together.');
+			}
 		}
 	})
 	.mixin(createEvented);

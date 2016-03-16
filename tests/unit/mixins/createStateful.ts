@@ -1,6 +1,8 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import createStateful, { StateChangeEvent } from 'src/mixins/createStateful';
+import { Observable, Observer } from 'rxjs/Rx';
+import { Handle } from 'dojo-core/interfaces';
 
 let _hasStrictModeCache: boolean;
 
@@ -88,5 +90,69 @@ registerSuite({
 		});
 
 		assert.strictEqual(stateful.state.foo, 'bar');
+	},
+	'observing state': {
+		'observeState'() {
+			const dfd = this.async();
+			const stateful = createStateful();
+			const observable = {
+				observe(id: string): Observable<Object> {
+					assert.strictEqual(id, 'foo');
+					return new Observable<Object>(function subscribe(observer: Observer<Object>) {
+						setTimeout(() => {
+							observer.next({ id: 'foo', foo: 'foo' });
+							observer.next({ id: 'foo', foo: 'bar' });
+							observer.next({ id: 'foo', foo: 'qat' });
+						}, 1);
+					});
+				}
+			};
+
+			let count = 0;
+			let handle: Handle;
+
+			stateful.on('statechange', (event) => {
+				count++;
+				if (count === 1) {
+					assert.deepEqual(event.target.state, { id: 'foo', foo: 'foo' });
+				}
+				else if (count === 2) {
+					assert.deepEqual(event.target.state, { id: 'foo', foo: 'bar' });
+					handle.destroy();
+					setTimeout(() => {
+						dfd.resolve();
+					}, 10);
+				}
+				else {
+					dfd.reject(new Error(`Unexpected call to 'statechange', called ${count} times`));
+				}
+			});
+
+			handle = stateful.observeState('foo', observable);
+		},
+		'observe on construction'() {
+			const observable = {
+				observe(id: string): Observable<Object> {
+					assert.strictEqual(id, 'foo');
+					return new Observable<Object>(function subscribe(observer: Observer<Object>) {
+						observer.next({ id: 'foo', foo: 'foo' });
+					});
+				}
+			};
+
+			const stateful = createStateful({
+				id: 'foo',
+				stateFrom: observable
+			});
+
+			assert.deepEqual(stateful.state, { id: 'foo', foo: 'foo' });
+		},
+		'throws on construction with missing value'() {
+			assert.throws(() => {
+				createStateful({
+					id: 'foo'
+				});
+			}, TypeError);
+		}
 	}
 });
