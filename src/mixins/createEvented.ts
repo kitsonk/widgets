@@ -51,7 +51,7 @@ const createEvented: EventedFactory = compose<any, EventedOptions>({
 	})
 	.mixin({
 		mixin: createDestroyable,
-		initializer(instance: Evented, options: EventedOptions) {
+		initialize(instance: Evented, options: EventedOptions) {
 			listenersMap.set(instance, {});
 			if (options && 'listeners' in options) {
 				for (let eventType in options.listeners) {

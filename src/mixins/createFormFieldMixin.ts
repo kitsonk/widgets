@@ -54,7 +54,7 @@ const createFormMixin: FormMixinFactory = createStateful
 				}
 			}
 		},
-		initializer(instance: FormFieldMixin<any, FormFieldMixinState<any>>, options: FormFieldMixinOptions) {
+		initialize(instance: FormFieldMixin<any, FormFieldMixinState<any>>, options: FormFieldMixinOptions) {
 			if (options && options.type) {
 				instance.type = options.type;
 			}

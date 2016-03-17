@@ -69,7 +69,7 @@ const createVNodeEvented: VNodeEventedFactory = createEvented.mixin({
 	mixin: {
 		listeners: <VNodeListeners> null
 	},
-	initializer(instance) {
+	initialize(instance) {
 		instance.listeners = {};
 	},
 	aspectAdvice: {

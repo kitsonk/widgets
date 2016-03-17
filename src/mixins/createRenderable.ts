@@ -46,7 +46,7 @@ const createRenderable: RenderableFactory = compose({
 	})
 	.mixin({
 		mixin: createDestroyable,
-		initializer(instance: Renderable, options: RenderableOptions) {
+		initialize(instance: Renderable, options: RenderableOptions) {
 			if (options) {
 				if (options.render) {
 					instance.render = options.render;

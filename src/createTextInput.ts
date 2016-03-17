@@ -16,7 +16,7 @@ export interface TextInputFactory extends ComposeFactory<TextInput, TextInputOpt
 const createTextInput: TextInputFactory = createWidget
 	.mixin({
 		mixin: createFormFieldMixin,
-		initializer(instance) {
+		initialize(instance) {
 			instance.own(instance.on('input', (event: TypedTargetEvent<HTMLInputElement>) => {
 				instance.value = event.target.value;
 			}));

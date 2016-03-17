@@ -95,7 +95,7 @@ const createCachedRenderMixin: ComposeFactory<CachedRenderMixin<CachedRenderStat
 				}
 			}
 		},
-		initializer(instance) {
+		initialize(instance) {
 			dirtyMap.set(this, true);
 		},
 		aspectAdvice: {
