@@ -101,6 +101,12 @@ module.exports = function (grunt) {
 				src: staticExampleFiles,
 				dest: '<%= devDirectory %>'
 			},
+			staticDistFiles: {
+				expand: true,
+				cwd: 'src/',
+				src: [ 'examples/**', '!examples/**/*.{js,ts}' ],
+				dest: 'dist/'
+			},
 			typings: {
 				expand: true,
 				cwd: 'typings/',
@@ -208,6 +214,16 @@ module.exports = function (grunt) {
 					ext: '.css',
 					dest: '_build/'
 				} ]
+			},
+			dist: {
+				options: {},
+				files: [ {
+					expand: true,
+					cwd: 'src/',
+					src: 'themes/**/*.styl',
+					ext: '.css',
+					dest: 'dist/'
+				}]
 			}
 		},
 
@@ -331,12 +347,15 @@ module.exports = function (grunt) {
 		'updateTsconfig'
 	]);
 	grunt.registerTask('dist', [
+		'clean:dist',
 		'tslint',
 		'ts:dist',
+		'stylus:dist',
 		'rename:sourceMaps',
 		'rewriteSourceMaps',
 		'copy:typings',
 		'copy:staticFiles',
+		'copy:staticDistFiles',
 		'dtsGenerator:dist',
 		'updatePackageJson'
 	]);
