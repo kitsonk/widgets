@@ -3,7 +3,7 @@ import compose, { ComposeFactory } from 'dojo-compose/compose';
 import WeakMap from 'dojo-core/WeakMap';
 import { deepAssign } from 'dojo-core/lang';
 import { EventObject, Handle } from 'dojo-core/interfaces';
-import createEvented, { Evented, EventedOptions, EventedCallback } from './createEvented';
+import createEvented, { Evented, EventedOptions, EventedListener } from './createEvented';
 
 const stateWeakMap = new WeakMap<Stateful<any>, any>();
 
@@ -53,8 +53,8 @@ export interface Stateful<S extends State> extends Evented {
 	 * @param type     The event to listener for
 	 * @param listener The event listener
 	 */
-	on(type: 'statechange', listener: EventedCallback<StateChangeEvent<S>>): Handle;
-	on(type: string, listener: EventedCallback<EventObject>): Handle;
+	on(type: 'statechange', listener: EventedListener<StateChangeEvent<S>>): Handle;
+	on(type: string, listener: EventedListener<EventObject>): Handle;
 }
 
 export interface StatefulFactory extends ComposeFactory<Stateful<State>, StatefulOptions<State>> {

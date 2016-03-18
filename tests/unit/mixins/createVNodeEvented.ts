@@ -45,5 +45,20 @@ registerSuite({
 	'vnode event noop doesn\'t throw'() {
 		const vnodeEvented = createVNodeEvented();
 		vnodeEvented.emit({ type: 'touchcancel' });
+	},
+	'actionable': {
+		'add action listener'() {
+			let count = 0;
+			const action = {
+				do(options: { event: any }): void {
+					assert.strictEqual(options.event.type, 'touchcancel');
+					count++;
+				}
+			};
+			const vnodeEvented = createVNodeEvented();
+			vnodeEvented.on('touchcancel', action);
+			vnodeEvented.emit({ type: 'touchcancel' });
+			assert.strictEqual(count, 1);
+		}
 	}
 });

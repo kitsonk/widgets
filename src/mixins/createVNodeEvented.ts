@@ -1,9 +1,10 @@
 import { Handle, EventObject } from 'dojo-core/interfaces';
 import { on } from 'dojo-core/aspect';
 import { ComposeFactory } from 'dojo-compose/compose';
-import createEvented, { Evented, EventedOptions, EventedCallback } from './createEvented';
+import createEvented, { Evented, EventedOptions, EventedListener, resolveEventListener } from './createEvented';
 
 export interface VNodeListeners {
+	[on: string]: (ev?: EventObject) => boolean | void;
 	ontouchcancel?(ev?: TouchEvent): boolean | void;
 	ontouchend?(ev?: TouchEvent): boolean | void;
 	ontouchmove?(ev?: TouchEvent): boolean | void;
@@ -59,8 +60,8 @@ const vnodeEvents = [
 
 export interface VNodeEvented extends Evented {
 	listeners: VNodeListeners;
-	on(type: 'touchcancel', listener: EventedCallback<TouchEvent>): Handle;
-	on(type: string, listener: EventedCallback<EventObject>): Handle;
+	on(type: 'touchcancel', listener: EventedListener<TouchEvent>): Handle;
+	on(type: string, listener: EventedListener<EventObject>): Handle;
 }
 
 export interface VNodeEventedFactory extends ComposeFactory<VNodeEvented, EventedOptions> { }
@@ -74,28 +75,30 @@ const createVNodeEvented: VNodeEventedFactory = createEvented.mixin({
 	},
 	aspectAdvice: {
 		around: {
-			on(origFn): (type: string, listener: EventedCallback<EventObject>) => Handle {
-				return function (type: string, listener: EventedCallback<EventObject>): Handle {
+			on(origFn): (type: string, listener: EventedListener<EventObject>) => Handle {
+				return function (type: string, listener: EventedListener<EventObject>): Handle {
+					const evented: VNodeEvented = this;
 					if (vnodeEvents.indexOf(type) > -1) {
 						type = 'on' + type;
-						return on(this.listeners, type, listener);
+						return on(evented.listeners, type, resolveEventListener(listener));
 					}
 					else {
-						return origFn.call(this, type, listener);
+						return origFn.call(evented, type, listener);
 					}
 				};
 			},
 
 			emit(origFn): <T extends EventObject>(event: T) => void {
 				return function <T extends EventObject>(event: T): void {
+					const evented: VNodeEvented = this;
 					if (vnodeEvents.indexOf(event.type) > -1) {
-						const method = this.listeners['on' + event.type];
+						const method = evented.listeners['on' + event.type];
 						if (method) {
-							method.call(this, event);
+							method.call(evented, event);
 						}
 					}
 					else {
-						origFn.call(this, event);
+						origFn.call(evented, event);
 					}
 				};
 			}

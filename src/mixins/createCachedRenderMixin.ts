@@ -7,7 +7,7 @@ import WeakMap from 'dojo-core/WeakMap';
 import { scheduleRender } from '../util/vdom';
 import createStateful, { State, Stateful, StateChangeEvent, StatefulOptions } from './createStateful';
 import createRenderable, { Renderable } from './createRenderable';
-import { EventedCallback } from './createEvented';
+import { EventedListener } from './createEvented';
 import createVNodeEvented, { VNodeEvented } from './createVNodeEvented';
 
 export interface CachedRenderState extends State {
@@ -39,8 +39,8 @@ export interface CachedRenderMixin<S extends CachedRenderState> extends Stateful
 	 */
 	invalidate(): void;
 
-	on(type: 'statechange', listener: EventedCallback<StateChangeEvent<S>>): Handle;
-	on(type: string, listener: EventedCallback<EventObject>): Handle;
+	on(type: 'statechange', listener: EventedListener<StateChangeEvent<S>>): Handle;
+	on(type: string, listener: EventedListener<EventObject>): Handle;
 }
 
 /**
