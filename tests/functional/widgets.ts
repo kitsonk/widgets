@@ -1,6 +1,6 @@
 import createButton from 'src/createButton';
 import createTextInput from 'src/createTextInput';
-import { attach } from 'src/util/vdom';
+import { attach, append } from 'src/util/vdom';
 
 const output = (<HTMLPreElement> document.getElementById('output'));
 
@@ -25,6 +25,9 @@ const input = createTextInput({
 input.on('input', (e: UIEvent) => {
 	output.innerHTML = JSON.stringify(input.state);
 });
+
+append(button);
+append(input);
 
 attach();
 
