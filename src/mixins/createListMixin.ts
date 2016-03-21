@@ -19,7 +19,7 @@ export interface TagNames {
 }
 
 export interface ListMixin extends CachedRenderMixin<ListMixinState> {
-	getChildrenNodes(): VNode[];
+	getChildrenNodes(): (VNode | string)[];
 	tagName: string;
 	tagNames: TagNames;
 }
@@ -27,14 +27,11 @@ export interface ListMixin extends CachedRenderMixin<ListMixinState> {
 const createListMixin: ComposeFactory<ListMixin, StatefulOptions<ListMixinState>> = createCachedRenderMixin
 	.mixin({
 		mixin: {
-			getChildrenNodes(): VNode[] {
-				if (this.state && this.state.items) {
-					const items: { id: any; label: string; }[] = this.state.items;
-					return [ h(this.tagNames.list, items.map((item) => {
-						return h(this.tagNames.item, {
-							key: item
-						}, [ item.label ]);
-					})) ];
+			getChildrenNodes(): (VNode | string)[] {
+				const list: ListMixin = this;
+				if (list.state && list.state.items) {
+					const items = list.state.items;
+					return [ h(list.tagNames.list, items.map((item) => h(list.tagNames.item, { key: item }, [ item.label ]))) ];
 				}
 				return [];
 			},

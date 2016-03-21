@@ -1,10 +1,10 @@
-import './has!dom-requestanimationframe?:maquette/maquette-polyfills.min';
+import './has!dom-requestanimationframe?:maquette/maquette-polyfills.min'; /* IE9 does not support RequestAnimationFrame */
 import { createProjector, VNode, Projector, h } from 'maquette/maquette';
-import { List } from 'immutable/immutable';
 import WeakMap from 'dojo-core/WeakMap';
 import { Handle } from 'dojo-core/interfaces';
 import compose from 'dojo-compose/compose';
 import { Renderable } from '../mixins/createRenderable';
+import { insertInArray, Position } from './lang';
 
 /**
  * The state of the projector
@@ -18,7 +18,7 @@ interface ProjectorData {
 	/**
 	 * A set of renderable children
 	 */
-	children: List<Renderable>;
+	children: Renderable[];
 
 	/**
 	 * The root element to merge with
@@ -46,17 +46,6 @@ interface ProjectorDataOptions {
 }
 
 /**
- * Utility function to map a Set of renderables to an array of
- * VNodes.
- * @param set The set of renderables to map
- */
-function renderableListToVNodeArray(list: List<Renderable>): VNode[] {
-	return list.map((value) => {
-			return value.render();
-		}).toArray();
-}
-
-/**
  * A factory that creates the additional map of Projector data
  */
 const createProjectorData = compose<ProjectorData, ProjectorDataOptions>({
@@ -64,10 +53,11 @@ const createProjectorData = compose<ProjectorData, ProjectorDataOptions>({
 	root: null,
 	state: ProjectorState.Detached,
 	render(): VNode {
-		return h('div', renderableListToVNodeArray(this.children));
+		const projectorData: ProjectorData = this;
+		return h('div', projectorData.children.map((child) => child.render()));
 	}
 }, (instance, options) => {
-	instance.children = List<Renderable>();
+	instance.children = [];
 });
 
 /**
@@ -124,33 +114,59 @@ export function attach(projector: Projector = defaultProjector): Handle {
 }
 
 /**
- * Append a renderable to a projector
- * @param renderable The renderable object to append
- * @param projector Optional Projector to append to, default one is implied
+ * Utility function to get a handle that will remove a renderable from a projector
  */
-export function append(renderable: Renderable, projector: Projector = defaultProjector): Handle {
-	let destroyed = false;
-	const projectorData = getProjectorData(projector);
-	projectorData.children = projectorData.children.push(renderable);
-	renderable.projector = projector;
-	return {
-		destroy() {
-			if (destroyed) {
-				return;
+function getRemoveFromProjectorHandle(projector: Projector, projectorData: ProjectorData, renderable: Renderable | Renderable[]): Handle {
+
+	function getDestroyHandle(r: Renderable): Handle {
+		let destroyed = false;
+		return r.own({
+			destroy() {
+				if (destroyed) {
+					return;
+				}
+				const idx = projectorData.children.indexOf(r);
+				if (idx >= 0) {
+					projectorData.children.splice(idx, 1);
+				}
+				destroyed = true;
+				if (r.parent === projector) {
+					r.parent === undefined;
+				}
+				scheduleRender(projector);
 			}
-			const idx = projectorData.children.indexOf(renderable);
-			if (idx >= 0) {
-				projectorData.children = projectorData.children.delete(idx);
+		});
+	}
+
+	if (Array.isArray(renderable)) {
+		let destroyed = false;
+		const handles = renderable.map((r) => getDestroyHandle(r));
+		return {
+			destroy() {
+				if (destroyed) {
+					return;
+				}
+				handles.forEach((handle) => handle.destroy());
+				destroyed = true;
 			}
-			destroyed = true;
-			renderable.projector = undefined;
-			scheduleRender(projector);
-		}
-	};
+		};
+	}
+	else {
+		return getDestroyHandle(renderable);
+	}
 }
 
-function isNumber(value: any): value is number {
-	return typeof value === 'number';
+/**
+ * Append a renderable to a projector
+ * @param renderable The renderable object(s) to append, either a Renderable or an array of Renderables
+ * @param projector Optional Projector to append to, default one is implied
+ */
+export function append(renderable: Renderable | Renderable[], projector: Projector = defaultProjector): Handle {
+	const renderables: Renderable[] = Array.isArray(renderable) ? renderable : [ renderable ];
+	const projectorData = getProjectorData(projector);
+	projectorData.children = projectorData.children.concat(renderables);
+	renderables.forEach((renderable) => renderable.parent = projector);
+	return getRemoveFromProjectorHandle(projector, projectorData, renderable);
 }
 
 /**
@@ -162,53 +178,11 @@ function isNumber(value: any): value is number {
  *                  reference
  * @param projector Optional Projector to insert into, default one is implied
  */
-export function insert(renderable: Renderable, position: number | 'first' | 'last' | 'before' | 'after', reference?: Renderable, projector: Projector = defaultProjector): Handle {
-	let destroyed = false;
+export function insert(renderable: Renderable, position: Position, reference?: Renderable, projector: Projector = defaultProjector): Handle {
 	const projectorData = getProjectorData(projector);
-
-	let idx: number;
-	if (isNumber(position)) {
-		idx = position;
-	}
-	else {
-		switch (position) {
-		case 'first':
-			idx = 0;
-			break;
-		case 'last':
-			idx = projectorData.children.size;
-			break;
-		case 'before':
-			idx = projectorData.children.indexOf(reference);
-			if (idx === -1) {
-				throw new Error('reference not a child of projector');
-			}
-			break;
-		case 'after':
-			idx = projectorData.children.indexOf(reference) + 1;
-			if (idx === 0) {
-				throw new Error('reference not a child of projector');
-			}
-			break;
-		default:
-			throw Error(`Invalid position "${position}"`);
-		}
-	}
-	projectorData.children = projectorData.children.insert(idx, renderable);
-	return {
-		destroy() {
-			if (destroyed) {
-				return;
-			}
-			const idx = projectorData.children.indexOf(renderable);
-			if (idx > 0) {
-				projectorData.children = projectorData.children.delete(idx);
-			}
-			destroyed = true;
-			renderable.projector = undefined;
-			scheduleRender(projector);
-		}
-	};
+	insertInArray(projectorData.children, renderable, position, reference);
+	renderable.parent = projector;
+	return renderable.own(getRemoveFromProjectorHandle(projector, projectorData, renderable));
 }
 
 /**
@@ -217,7 +191,7 @@ export function insert(renderable: Renderable, position: number | 'first' | 'las
  */
 export function clear(projector: Projector = defaultProjector): void {
 	const projectorData = getProjectorData(projector);
-	projectorData.children = projectorData.children.clear();
+	projectorData.children = [];
 	scheduleRender(projector);
 }
 
@@ -232,6 +206,14 @@ export function setRoot(root: Element, projector: Projector = defaultProjector):
 		throw new Error('Projector already attached, cannot change root element');
 	}
 	projectorData.root = root;
+}
+
+/**
+ * A type guard for Maquette Projectors
+ * @param value The value to type guard against
+ */
+export function isProjector(value: any): value is Projector {
+	return value && typeof value === 'object' && typeof value.scheduleRender === 'function';
 }
 
 /**

@@ -8,22 +8,36 @@ import compose, { ComposeFactory } from 'dojo-compose/compose';
 export type StoreIndex = number | string;
 
 export interface MemoryStorePragma {
+	/**
+	 * The identity of the object
+	 */
 	id?: StoreIndex;
+
+	/**
+	 * Should the item be replaced if already exists.
+	 */
 	replace?: boolean;
 }
 
 export interface MemoryStorePromise<T> extends Promise<T>, MemoryStore<T> { }
 
 export interface MemoryStoreOptions<T extends Object> {
+	/**
+	 * Any initial data that should populate the store
+	 */
 	data?: T[];
-	idProperty?: string | symbol;
+
+	/**
+	 * The property of each object to use as the identity for the object
+	 */
+	idProperty?: StoreIndex;
 }
 
 export interface MemoryStore<T extends Object> {
 	/**
 	 * The property that determines the ID of the object (defaults to `id`)
 	 */
-	idProperty: string | symbol;
+	idProperty: StoreIndex;
 
 	/**
 	 * Retrieve an object from the store based on the object's ID
@@ -54,7 +68,10 @@ export interface MemoryStore<T extends Object> {
 	add(item: T, options?: MemoryStorePragma): MemoryStorePromise<T>;
 
 	/**
-	 *
+	 * Patch an object in the store by providing a partial object.  The result will be a promise
+	 * that resolves with the patched object.
+	 * @param partial The partial object to patch the existing object with
+	 * @param options The pragma to use when patching the object
 	 */
 	patch(partial: any, options?: MemoryStorePragma): MemoryStorePromise<T>;
 
@@ -72,16 +89,32 @@ export interface MemoryStore<T extends Object> {
 	fromArray(items: T[]): MemoryStorePromise<void>;
 }
 
+/**
+ * The weak map that contains the data for the stores
+ */
 const dataWeakMap = new WeakMap<MemoryStore<Object>, OrderedMap<StoreIndex, Object>>();
+
+/**
+ * The weak map that contains any observers for the stores
+ */
 const observerWeakMap = new WeakMap<MemoryStore<Object>, Map<StoreIndex, Observer<Object>[]>>();
 
 export interface MemoryStoreFactory extends ComposeFactory<MemoryStore<Object>, MemoryStoreOptions<Object>> {
 	<T extends Object>(options?: MemoryStoreOptions<T>): MemoryStore<T>;
 }
 
+/**
+ * The methods to decorate the MemoryStorePromise with
+ */
 const storeMethods = [ 'get', 'put', 'add', 'patch', 'delete', 'fromArray' ];
 
+/**
+ * Utility function that takes a result and generates a MemoryStorePromise
+ * @param store The store to use as a reference when decorating the Promise
+ * @param result The result to wrap, if Thenable, it will be decorated, otherwise a new Promise is created
+ */
 function wrapResult<R>(store: MemoryStore<Object>, result: R): MemoryStorePromise<R> {
+	/* TODO: this all seems pretty expensive, there has to be a better way */
 	const p = (isThenable(result) ? result : Promise.resolve(result)) as MemoryStorePromise<R>;
 	storeMethods.forEach((method) => {
 		(<any> p)[method] = (...args: any[]) => {
@@ -93,6 +126,11 @@ function wrapResult<R>(store: MemoryStore<Object>, result: R): MemoryStorePromis
 	return p;
 }
 
+/**
+ * Utility function that takes an error and generates a rejected MemoryStorePromise
+ * @param store The store to use as a reference when decorating the Promise
+ * @param result The result to wrap
+ */
 function wrapError(store: MemoryStore<Object>, result: Error): MemoryStorePromise<Object> {
 	const p = (isThenable(result) ? result : Promise.reject(result)) as MemoryStorePromise<Object>;
 	storeMethods.forEach((method) => {
@@ -105,6 +143,9 @@ function wrapError(store: MemoryStore<Object>, result: Error): MemoryStorePromis
 	return p;
 }
 
+/**
+ * Create a new instance of a MemoryStore
+ */
 const createMemoryStore: MemoryStoreFactory = compose({
 	idProperty: 'id',
 
@@ -233,7 +274,11 @@ const createMemoryStore: MemoryStoreFactory = compose({
 	}
 });
 
-export function fromArray(data: any[]): MemoryStore<any> {
+/**
+ * A utility function that takes an array of data and returns a new instance of a MemoryStore
+ * @param data The data used to populate the new store
+ */
+export function fromArray<T>(data: T[]): MemoryStore<T> {
 	return createMemoryStore({ data });
 };
 

@@ -1,4 +1,5 @@
 import './createCachedRenderMixin';
+import './createContainerMixin';
 import './createDestroyable';
 import './createEvented';
 import './createListMixin';

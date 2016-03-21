@@ -4,7 +4,7 @@ import { EventObject, Handle } from 'dojo-core/interfaces';
 import { assign } from 'dojo-core/lang';
 import Map from 'dojo-core/Map';
 import WeakMap from 'dojo-core/WeakMap';
-import { scheduleRender } from '../util/vdom';
+import { scheduleRender, isProjector } from '../util/vdom';
 import createStateful, { State, Stateful, StateChangeEvent, StatefulOptions } from './createStateful';
 import createRenderable, { Renderable } from './createRenderable';
 import { EventedListener } from './createEvented';
@@ -32,7 +32,7 @@ export interface CachedRenderMixin<S extends CachedRenderState> extends Stateful
 	/**
 	 * Returns any children VNodes that are part of the widget
 	 */
-	getChildrenNodes(): VNode[];
+	getChildrenNodes(): (VNode | string)[];
 
 	/**
 	 * Invalidate the widget so that it will recalculate on its next render
@@ -61,9 +61,10 @@ const createCachedRenderMixin: ComposeFactory<CachedRenderMixin<CachedRenderStat
 	.mixin({
 		mixin: {
 			getNodeAttributes(overrides?: VNodeProperties): VNodeProperties {
-				const props: VNodeProperties = this.state.id ? { id: this.state.id } : {};
-				for (let key in this.listeners) {
-					props[key] = this.listeners[key];
+				const cachedRender: CachedRenderMixin<CachedRenderState> = this;
+				const props: VNodeProperties = cachedRender.state.id ? { id: cachedRender.state.id } : {};
+				for (let key in cachedRender.listeners) {
+					props[key] = cachedRender.listeners[key];
 				}
 				if (overrides) {
 					assign(props, overrides);
@@ -71,32 +72,43 @@ const createCachedRenderMixin: ComposeFactory<CachedRenderMixin<CachedRenderStat
 				return props;
 			},
 
-			getChildrenNodes(): VNode[] {
-				return this.state.label ? [ this.state.label ] : undefined;
+			getChildrenNodes(): (VNode | string)[] {
+				const cachedRender: CachedRenderMixin<CachedRenderState> = this;
+				return cachedRender.state.label ? [ cachedRender.state.label ] : undefined;
 			},
 
 			render(): VNode {
-				let cached = renderCache.get(this);
-				if (!dirtyMap.get(this) && cached) {
+				const cachedRender: CachedRenderMixin<CachedRenderState> = this;
+				let cached = renderCache.get(cachedRender);
+				if (!dirtyMap.get(cachedRender) && cached) {
 					return cached;
 				}
 				else {
-					dirtyMap.set(this, false);
-					cached = h(this.tagName, this.getNodeAttributes(), this.getChildrenNodes());
-					renderCache.set(this, cached);
+					cached = h(cachedRender.tagName, cachedRender.getNodeAttributes(), cachedRender.getChildrenNodes());
+					renderCache.set(cachedRender, cached);
+					dirtyMap.set(cachedRender, false);
 					return cached;
 				}
 			},
 
 			invalidate(): void {
-				dirtyMap.set(this, true);
-				if (this.projector) {
-					scheduleRender(this.projector);
+				const cachedRender: CachedRenderMixin<CachedRenderState> = this;
+				if (dirtyMap.get(cachedRender)) { /* short circuit if already dirty */
+					return;
+				}
+				const parent = cachedRender.parent;
+				dirtyMap.set(cachedRender, true);
+				/* TODO: Consider unifying the API, so the parent can always be invalidated() */
+				if (isProjector(parent)) {
+					scheduleRender(parent);
+				}
+				else if (parent) {
+					parent.invalidate();
 				}
 			}
 		},
 		initialize(instance) {
-			dirtyMap.set(this, true);
+			dirtyMap.set(instance, true);
 		},
 		aspectAdvice: {
 			after: {

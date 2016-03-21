@@ -18,6 +18,7 @@ registerSuite({
 				return h('h2', [ nodeText ] );
 			}
 		});
+		append(renderable);
 		const attachHandle = attach();
 		assert.strictEqual(document.body.childNodes.length, childNodeLength + 1, 'child should have been added');
 		assert.strictEqual((<HTMLElement> document.body.lastChild).innerHTML, nodeText);

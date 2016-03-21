@@ -3,7 +3,9 @@ import createWidget from 'src/createWidget';
 import createButton from 'src/createButton';
 import createTextInput from 'src/createTextInput';
 import createList from 'src/createList';
-import { attach } from 'src/util/vdom';
+import createContainer from 'src/createContainer';
+import { Renderable } from 'src/mixins/createRenderable';
+import { attach, append } from 'src/util/vdom';
 
 /**
  * List items to populate list widget
@@ -22,21 +24,26 @@ const listItems = [
 const widgetStore = createMemoryStore({
 	data: [
 		{ id: 'foo', label: 'dojo-widget Examples'},
-		{ id: 'remove', label: 'Remove', name: 'remove' },
+		{ id: 'remove', label: 'Remove', name: 'remove', disabled: true },
 		{ id: 'first-name', name: 'first-name', value: 'qat' },
 		{ id: 'add', label: 'Add', name: 'add' },
-		{ id: 'list', items: listItems }
+		{ id: 'list', items: listItems },
+		{ id: 'container' },
+		{ id: 'bar', label: 'I am contained' },
+		{ id: 'change-text', label: 'Change' }
 	]
 });
+
+const widgets: Renderable[] = [];
 
 /**
  * Header widget
  */
-createWidget({
+widgets.push(createWidget({
 	id: 'foo',
 	stateFrom: widgetStore,
 	tagName: 'h1'
-});
+}));
 
 /**
  * Removes item from list when clicked
@@ -46,6 +53,8 @@ const buttonRemove = createButton({
 	stateFrom: widgetStore
 });
 
+widgets.push(buttonRemove);
+
 /**
  * Text input for labels for items added to list
  */
@@ -54,6 +63,8 @@ const textInput = createTextInput({
 	stateFrom: widgetStore
 });
 
+widgets.push(textInput);
+
 /**
  * Button adds item to list
  */
@@ -61,6 +72,8 @@ const buttonAdd = createButton({
 	id: 'add',
 	stateFrom: widgetStore
 });
+
+widgets.push(buttonAdd);
 
 /**
  * ID counter for items
@@ -74,6 +87,30 @@ const list = createList({
 	id: 'list',
 	stateFrom: widgetStore
 });
+
+widgets.push(list);
+
+const container = createContainer({
+	id: 'container',
+	stateFrom: widgetStore
+});
+
+container.append(createWidget({
+	id: 'bar',
+	stateFrom: widgetStore
+}));
+
+container.append(createButton({
+	id: 'change-text',
+	stateFrom: widgetStore,
+	listeners: {
+		click() {
+			widgetStore.patch({ id: 'bar', label: 'And I changed!' });
+		}
+	}
+}));
+
+widgets.push(container);
 
 /* On click handler for remove button */
 buttonRemove.on('click', (e: MouseEvent) => {
@@ -89,10 +126,8 @@ buttonAdd.on('click', (e: MouseEvent) => {
 	return true;
 });
 
-console.log('buttonRemove', buttonRemove);
-console.log('buttonAdd', buttonAdd);
-console.log('textInput', textInput);
-console.log('list', list);
+/* Append widgets to projector */
+append(widgets);
 
 /* Attach projector to DOM */
 attach();

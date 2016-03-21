@@ -104,7 +104,7 @@ module.exports = function (grunt) {
 			staticDistFiles: {
 				expand: true,
 				cwd: 'src/',
-				src: [ 'examples/**', '!examples/**/*.{js,ts}' ],
+				src: [ 'examples/**', 'themes/**/*.styl', '!examples/**/*.{js,ts}' ],
 				dest: 'dist/'
 			},
 			typings: {

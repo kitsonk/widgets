@@ -20,12 +20,14 @@
 	"files": [
 		"./typings/tsd.d.ts",
 		"./src/createButton.ts",
+		"./src/createContainer.ts",
 		"./src/createList.ts",
 		"./src/createTextInput.ts",
 		"./src/createWidget.ts",
 		"./src/examples/boot.ts",
 		"./src/examples/index.ts",
 		"./src/mixins/createCachedRenderMixin.ts",
+		"./src/mixins/createContainerMixin.ts",
 		"./src/mixins/createDestroyable.ts",
 		"./src/mixins/createEvented.ts",
 		"./src/mixins/createFormFieldMixin.ts",
@@ -35,6 +37,7 @@
 		"./src/mixins/createVNodeEvented.ts",
 		"./src/util/createMemoryStore.ts",
 		"./src/util/has.ts",
+		"./src/util/lang.ts",
 		"./src/util/query.ts",
 		"./src/util/vdom.ts",
 		"./tests/functional/all.ts",
@@ -63,6 +66,7 @@
 		"./tests/unit/integrations.ts",
 		"./tests/unit/mixins/all.ts",
 		"./tests/unit/mixins/createCachedRenderMixin.ts",
+		"./tests/unit/mixins/createContainerMixin.ts",
 		"./tests/unit/mixins/createDestroyable.ts",
 		"./tests/unit/mixins/createEvented.ts",
 		"./tests/unit/mixins/createListMixin.ts",
@@ -71,6 +75,8 @@
 		"./tests/unit/mixins/createVNodeEvented.ts",
 		"./tests/unit/util/all.ts",
 		"./tests/unit/util/createMemoryStore.ts",
+		"./tests/unit/util/has.ts",
+		"./tests/unit/util/lang.ts",
 		"./tests/unit/util/vdom.ts"
 	]
 }
