@@ -14,6 +14,7 @@ cache:
     - node_modules
 install:
   - "travis_retry npm install grunt-cli"
+  - "travis_retry npm install typings --global"
   - "travis_retry npm install"
 script:
   - "grunt"
