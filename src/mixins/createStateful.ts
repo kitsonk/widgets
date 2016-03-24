@@ -67,11 +67,12 @@ const createStateful: StatefulFactory = compose({
 		},
 
 		setState(value: State): State {
-			const state = deepAssign(stateWeakMap.get(this), value);
-			this.emit({
+			const stateful: Stateful<any> = this;
+			const state = deepAssign(stateWeakMap.get(stateful), value);
+			stateful.emit({
 				type: 'statechange',
 				state,
-				target: this
+				target: stateful
 			});
 			return state;
 		},

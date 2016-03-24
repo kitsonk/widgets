@@ -46,6 +46,6 @@ registerSuite({
 			disabled: true
 		});
 		vnode = button.render();
-		assert.isTrue(vnode.properties['disabled']);
+		assert.strictEqual(vnode.properties['disabled'], 'disabled');
 	}
 });

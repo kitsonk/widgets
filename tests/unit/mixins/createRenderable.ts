@@ -1,7 +1,8 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import createRenderable, { isRenderable } from 'src/mixins/createRenderable';
-import { h } from 'maquette/maquette';
+import createContainerMixin from 'src/mixins/createContainerMixin';
+import { h, createProjector } from 'maquette/maquette';
 
 registerSuite({
 	name: 'mixins/createRenderable',
@@ -28,6 +29,28 @@ registerSuite({
 			tagName: 'h1'
 		});
 		assert.strictEqual(renderable2.tagName, 'h1');
+	},
+	'option.parent': {
+		'container'() {
+			const parent = createContainerMixin();
+			const renderable = createRenderable({
+				render() {
+					return h('h1', [ 'Greetings' ]);
+				},
+				parent
+			});
+			assert.strictEqual(renderable.parent, parent);
+		},
+		'projector'() {
+			const projector = createProjector({});
+			const renderable = createRenderable({
+				render() {
+					return h('h1', [ 'Greetings' ]);
+				},
+				parent: projector
+			});
+			assert.strictEqual(renderable.parent, projector);
+		}
 	},
 	'isRenderable'() {
 		const renderable = createRenderable({

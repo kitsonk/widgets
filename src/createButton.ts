@@ -4,7 +4,7 @@ import createFormFieldMixin, { FormFieldMixin, FormFieldMixinState, FormFieldMix
 
 export interface ButtonState extends WidgetState, FormFieldMixinState<string> { }
 
-export interface ButtonOptions extends WidgetOptions<ButtonState>, FormFieldMixinOptions { }
+export interface ButtonOptions extends WidgetOptions<ButtonState>, FormFieldMixinOptions<any, ButtonState> { }
 
 export interface Button extends Widget<ButtonState>, FormFieldMixin<string, ButtonState> { }
 

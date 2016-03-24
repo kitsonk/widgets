@@ -1,13 +1,13 @@
 import { VNodeProperties } from 'maquette/maquette';
 import { ComposeFactory } from 'dojo-compose/compose';
 import createStateful, { Stateful, State, StatefulOptions } from './createStateful';
-import createCachedRenderMixin, { CachedRenderMixin } from './createCachedRenderMixin';
+import createCachedRenderMixin, { CachedRenderMixin, CachedRenderState } from './createCachedRenderMixin';
 
-export interface FormFieldMixinOptions {
+export interface FormFieldMixinOptions<V, S extends FormFieldMixinState<V>> extends StatefulOptions<S> {
 	type?: string;
 }
 
-export interface FormFieldMixinState<V> extends State {
+export interface FormFieldMixinState<V> extends State, CachedRenderState {
 	/**
 	 * The form widget's name
 	 */
@@ -36,8 +36,8 @@ export interface FormFieldMixin<V, S extends FormFieldMixinState<V>> extends Sta
 	value?: string;
 }
 
-export interface FormMixinFactory extends ComposeFactory<FormFieldMixin<any, FormFieldMixinState<any>>, FormFieldMixinOptions> {
-	<V>(options?: StatefulOptions<FormFieldMixinState<V>>): FormFieldMixin<V, FormFieldMixinState<V>>;
+export interface FormMixinFactory extends ComposeFactory<FormFieldMixin<any, FormFieldMixinState<any>>, FormFieldMixinState<any>> {
+	<V>(options?: FormFieldMixinOptions<V, FormFieldMixinState<V>>): FormFieldMixin<V, FormFieldMixinState<V>>;
 }
 
 const createFormMixin: FormMixinFactory = createStateful
@@ -45,16 +45,18 @@ const createFormMixin: FormMixinFactory = createStateful
 	.mixin({
 		mixin: {
 			get value(): string {
-				return this.state.value;
+				const formfield: FormFieldMixin<any, FormFieldMixinState<any>> = this;
+				return formfield.state.value;
 			},
 
 			set value(value: string) {
-				if (value !== this.state.value) {
-					this.setState({ value });
+				const formfield: FormFieldMixin<any, FormFieldMixinState<any>> = this;
+				if (value !== formfield.state.value) {
+					formfield.setState({ value });
 				}
 			}
 		},
-		initialize(instance: FormFieldMixin<any, FormFieldMixinState<any>>, options: FormFieldMixinOptions) {
+		initialize(instance: FormFieldMixin<any, FormFieldMixinState<any>>, options?: FormFieldMixinOptions<any, FormFieldMixinState<any>>) {
 			if (options && options.type) {
 				instance.type = options.type;
 			}
@@ -62,26 +64,26 @@ const createFormMixin: FormMixinFactory = createStateful
 		aspectAdvice: {
 			before: {
 				getNodeAttributes(...args: any[]) {
+					const formfield: FormFieldMixin<any, FormFieldMixinState<any>> = this;
 					let overrides: VNodeProperties = args[0];
 
 					if (!overrides) {
-						overrides = {};
+						args[0] = overrides = {};
 					}
 
-					if (this.type) {
-						overrides['type'] = this.type;
+					if (formfield.type) {
+						overrides['type'] = formfield.type;
 					}
-					if (this.value) {
-						overrides.value = this.value;
+					if (formfield.value) {
+						overrides.value = formfield.value;
 					}
-					if (this.state.name) {
-						overrides.name = this.state.name;
+					if (formfield.state.name) {
+						overrides.name = formfield.state.name;
 					}
-					if (this.state.disabled !== 'undefined') {
-						overrides['disabled'] = this.state.disabled;
+					if (formfield.state.disabled) {
+						overrides['disabled'] = 'disabled';
 					}
 
-					args[0] = overrides;
 					return args;
 				}
 			}

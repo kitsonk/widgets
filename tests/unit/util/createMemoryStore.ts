@@ -62,10 +62,28 @@ registerSuite({
 			return store
 				.add({ id: 1, foo: 'bar' })
 				.add({ id: 1, foo: 'baz' })
-				.catch((error) => {
+				.then(() => {
+					throw new Error('Should have rejected');
+				}, (error) => {
 					assert.instanceOf(error, Error);
-					assert.include(error.message, 'Duplicate id');
+					assert.include(error.message, 'Duplicate ID');
 				});
+		// },
+		// 'add duplicate reject still chains'() {
+		// 	const store = createMemoryStore();
+		// 	const p = store
+		// 		.add({ id: 1, foo: 'bar' })
+		// 		.add({ id: 1, foo: 'baz' });
+
+		// 	console.log(p);
+
+		// 	return p
+		// 		.add({ id: 2, foo: 'qat' })
+		// 		.then(() => {
+		// 			console.log('resolve');
+		// 		}, () => {
+		// 			console.log('reject');
+		// 		});
 		}
 	},
 	'fromArray()'() {
@@ -113,6 +131,30 @@ registerSuite({
 				.then((item) => {
 					assert.deepEqual(item, { id: 1, foo: 'qat', bar: 1 });
 				});
+		},
+		'missing rejects'() {
+			const store = createMemoryStore();
+
+			return store
+				.patch({ foo: 'qat', bar: 1}, { id: 1 })
+				.then(() => {
+					throw new Error('Should have rejected');
+				}, (error) => {
+					assert.instanceOf(error, Error);
+					assert.strictEqual(error.message, 'Object with ID "1" not found, unable to patch.');
+				});
+		},
+		'missing id rejects'() {
+			const store = createMemoryStore();
+
+			return store
+				.patch({ foo: 'qat', bar: 1})
+				.then(() => {
+					throw new Error('Should have rejected');
+				}, (error) => {
+					assert.instanceOf(error, Error);
+					assert.strictEqual(error.message, 'Object ID must either be passed in "partial.id" or "options.id"');
+				});
 		}
 	},
 	'observer()': {
@@ -157,6 +199,91 @@ registerSuite({
 				item.foo = 'baz';
 				store.put(item);
 			});
+		},
+		'subscribe to missing id'() {
+			const dfd = this.async();
+			let callbackCount = 0;
+			let errorCount = 0;
+			let completeCount = 0;
+			const store = createMemoryStore();
+			store.observe(1).subscribe(() => {
+				callbackCount++;
+			}, () => {
+				errorCount++;
+			}, () => {
+				completeCount++;
+			});
+
+			setTimeout(dfd.callback(() => {
+				assert.strictEqual(callbackCount, 0);
+				assert.strictEqual(errorCount, 0);
+				assert.strictEqual(completeCount, 1);
+			}), 10);
+		}
+	},
+	'delete()': {
+		'by id'() {
+			const store = createMemoryStore({
+				data: [
+					{ id: 1, foo: 'bar' },
+					{ id: 2, foo: 'baz' },
+					{ id: 3, foo: 'qat' }
+				]
+			});
+
+			return store.delete(2)
+				.then((result) => {
+					assert.isTrue(result);
+					return store.get(2)
+						.then((result) => {
+							assert.isUndefined(result);
+						});
+				});
+		},
+		'by object'() {
+			const item = { id: 1, foo: 'bar' };
+			const store = createMemoryStore({
+				data: [ item ]
+			});
+
+			return store.delete(item)
+				.then((result) => {
+					assert.isTrue(result);
+				});
+		},
+		'not in store'() {
+			const store = createMemoryStore();
+
+			return store.delete('foo')
+				.then((result) => {
+					assert.isFalse(result);
+				});
+		},
+		'complete observable'() {
+			const dfd = this.async();
+			const stack: any[] = [];
+			let complete = false;
+			let errorCalled = false;
+			const store = createMemoryStore({
+				data: [ { id: 1, foo: 'foo' }]
+			});
+			store.observe(1).subscribe((item) => {
+				stack.push(item);
+			}, () => {
+				errorCalled = true;
+			}, () => {
+				complete = true;
+			});
+
+			setTimeout(() => {
+				store.delete(1);
+			}, 10);
+
+			setTimeout(dfd.callback(() => {
+				assert.strictEqual(stack.length, 1);
+				assert.isTrue(complete);
+				assert.isFalse(errorCalled);
+			}), 20);
 		}
 	}
 });

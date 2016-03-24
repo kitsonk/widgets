@@ -1,6 +1,6 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 import { Projector, VNode } from 'maquette/maquette';
-import { append } from '../util/vdom';
+import { append, isProjector } from '../util/vdom';
 import { ContainerMixin, ContainerMixinState } from './createContainerMixin';
 import createDestroyable, { Destroyable } from './createDestroyable';
 
@@ -38,10 +38,6 @@ export function isRenderable(value: any): value is Renderable {
 	return value && typeof value.render === 'function';
 }
 
-function isContainerMixin(value: any): value is ContainerMixin<Renderable, ContainerMixinState> {
-	return;
-}
-
 const createRenderable: RenderableFactory = compose({
 		render: <RenderFunction> null,
 
@@ -65,11 +61,11 @@ const createRenderable: RenderableFactory = compose({
 				}
 				if (options.parent) {
 					const parent = options.parent;
-					if (isContainerMixin(parent)) {
-						parent.append(instance);
+					if (isProjector(parent)) {
+						instance.own(append(instance, parent));
 					}
 					else {
-						instance.own(append(instance));
+						parent.append(instance);
 					}
 				}
 			}

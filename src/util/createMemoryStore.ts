@@ -169,9 +169,6 @@ const createMemoryStore: MemoryStoreFactory = compose({
 				else {
 					observer.complete();
 				}
-			}, (error: Error) => {
-				console.log('reject');
-				observer.error(error);
 			});
 		});
 	},
@@ -183,7 +180,7 @@ const createMemoryStore: MemoryStoreFactory = compose({
 		const id =  options && 'id' in options ? options.id :
 			idProperty in item ? item[idProperty] :
 			data ? data.size : 0;
-		if (options && options.replace === false && data && data.has(id)) {
+		if (options && options.replace === false && data && data.has(String(id))) {
 			return wrapError(store, Error(`Duplicate ID "${id}" when pragma "replace" is false`));
 		}
 		item[idProperty] = id;

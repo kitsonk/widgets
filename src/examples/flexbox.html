@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		@import url('../themes/basic/basic.css');
+
+		.basic {
+			box-sizing: border-box;
+			margin: 0;
+			overflow: hidden;
+		}
+
+		.basic * {
+			box-sizing: border-box;
+		}
+
+		dojo-container-workspace {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			overflow: hidden;
+			position: relative;
+		}
+
+		dojo-container-panel {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			overflow: hidden;
+			position: relative;
+			flex: 1;
+		}
+
+		dojo-container-panel.left {
+			flex: 1;
+			border: 5px solid red;
+			height: initial;
+			display: flex;
+			z-index: 2;
+			width: 200px;
+			min-width: 100px;
+			position: relative;
+		}
+
+		.resize-verticle-handle {
+			right: -5px;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 10px;
+			cursor: col-resize;
+			z-index: 3;
+		}
+	</style>
+</head>
+<body class="basic">
+	<dojo-container-workspace>
+		<dojo-container-panel class="left" style="width: 200px">
+			<div>foo</div>
+			<div class="resize-verticle-handle"></div>
+		</dojo-container-panel>
+		<dojo-container-panel>bar</dojo-container-panel>
+	</dojo-container-workspace>
+</body>
+</html>

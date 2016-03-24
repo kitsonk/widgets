@@ -2,6 +2,7 @@ import './createCachedRenderMixin';
 import './createContainerMixin';
 import './createDestroyable';
 import './createEvented';
+import './createFormFieldMixin';
 import './createListMixin';
 import './createRenderable';
 import './createStateful';

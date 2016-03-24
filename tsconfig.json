@@ -70,6 +70,7 @@
 		"./tests/unit/mixins/createContainerMixin.ts",
 		"./tests/unit/mixins/createDestroyable.ts",
 		"./tests/unit/mixins/createEvented.ts",
+		"./tests/unit/mixins/createFormFieldMixin.ts",
 		"./tests/unit/mixins/createListMixin.ts",
 		"./tests/unit/mixins/createRenderable.ts",
 		"./tests/unit/mixins/createStateful.ts",

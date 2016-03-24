@@ -1,6 +1,6 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { attach, append, clear, setRoot, scheduleRender } from 'src/util/vdom';
+import { attach, append, insert, clear, setRoot, scheduleRender } from 'src/util/vdom';
 import { createProjector, h } from 'maquette/maquette';
 import createRenderable from 'src/mixins/createRenderable';
 
@@ -83,5 +83,49 @@ registerSuite({
 			setRoot(document.body, projector);
 		}, Error, 'already attached');
 		handle.destroy();
+	},
+	'append()'() {
+		const dfd = this.async();
+		const projector = createProjector({});
+		const div = document.createElement('div');
+		document.body.appendChild(div);
+		setRoot(div, projector);
+		const handle = append([
+			createRenderable({ render() { return h('foo', [ 'foo' ]); } }),
+			createRenderable({ render() { return h('bar', [ 'bar' ]); } })
+		], projector);
+		const attachHandle = attach(projector);
+		setTimeout(() => {
+			assert.strictEqual(div.childNodes.length, 2);
+			assert.strictEqual((<HTMLElement> div.firstChild).innerHTML, 'foo');
+			assert.strictEqual((<HTMLElement> div.lastChild).innerHTML, 'bar');
+			handle.destroy();
+			scheduleRender();
+			setTimeout(dfd.callback(() => {
+				handle.destroy();
+				assert.strictEqual(div.childNodes.length, 0);
+				attachHandle.destroy();
+			}), 150);
+		}, 150);
+	},
+	'insert()'() {
+		const dfd = this.async();
+		const projector = createProjector({});
+		const div = document.createElement('div');
+		document.body.appendChild(div);
+		setRoot(div, projector);
+		const handle = insert(createRenderable({ render() { return h('foo', [ 'foo' ]); } }), 'first', undefined, projector);
+		const attachHandle = attach(projector);
+		setTimeout(() => {
+			assert.strictEqual(div.childNodes.length, 1);
+			assert.strictEqual((<HTMLElement> div.firstChild).innerHTML, 'foo');
+			handle.destroy();
+			scheduleRender();
+			setTimeout(dfd.callback(() => {
+				handle.destroy();
+				assert.strictEqual(div.childNodes.length, 0);
+				attachHandle.destroy();
+			}), 150);
+		}, 150);
 	}
 });
