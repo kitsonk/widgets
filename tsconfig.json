@@ -46,8 +46,8 @@
 		"./tests/intern-local.ts",
 		"./tests/intern-saucelabs.ts",
 		"./tests/intern.ts",
-		"./tests/support/Reporter.ts",
 		"./tests/support/loadJsdom.ts",
+		"./tests/support/Reporter.ts",
 		"./tests/support/util.ts",
 		"./tests/typings/chai/chai.d.ts",
 		"./tests/typings/digdug/digdug.d.ts",
@@ -79,5 +79,8 @@
 		"./tests/unit/util/has.ts",
 		"./tests/unit/util/lang.ts",
 		"./tests/unit/util/vdom.ts"
-	]
+	],
+	"atom": {
+		"rewriteTsconfig": true
+	}
 }
