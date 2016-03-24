@@ -25,7 +25,7 @@ export interface Renderable extends Destroyable {
 	/**
 	 * Takes no arguments and returns a VNode
 	 */
-	render: RenderFunction;
+	render(): VNode;
 
 	tagName: string;
 
@@ -64,8 +64,9 @@ const createRenderable: RenderableFactory = compose({
 					instance.tagName = options.tagName;
 				}
 				if (options.parent) {
-					if (isContainerMixin(options.parent)) {
-						//
+					const parent = options.parent;
+					if (isContainerMixin(parent)) {
+						parent.append(instance);
 					}
 					else {
 						instance.own(append(instance));

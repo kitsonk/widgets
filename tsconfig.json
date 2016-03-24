@@ -60,6 +60,7 @@
 		"./tests/typings/tsd.d.ts",
 		"./tests/unit/all.ts",
 		"./tests/unit/createButton.ts",
+		"./tests/unit/createContainer.ts",
 		"./tests/unit/createList.ts",
 		"./tests/unit/createTextInput.ts",
 		"./tests/unit/createWidget.ts",

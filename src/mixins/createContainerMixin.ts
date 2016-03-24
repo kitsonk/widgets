@@ -1,8 +1,7 @@
 import { List } from 'immutable/immutable';
 import { VNode } from 'maquette/maquette';
-import { ComposeFactory } from 'dojo-compose/compose';
+import compose, { ComposeFactory } from 'dojo-compose/compose';
 import { Handle } from 'dojo-core/interfaces';
-import Promise from 'dojo-core/Promise';
 import WeakMap from 'dojo-core/WeakMap';
 import createCachedRenderMixin, { CachedRenderMixin, CachedRenderState } from './createCachedRenderMixin';
 import { Renderable } from './createRenderable';
@@ -13,7 +12,7 @@ export interface ContainerMixinOptions<R extends Renderable, S extends Container
 	/**
 	 * The children that should be owned by this instance
 	 */
-	children?: R[] | List<R>;
+	children?: R[];
 }
 
 export interface ContainerMixinState extends CachedRenderState { }
@@ -26,16 +25,17 @@ export interface ContainerMixin<R extends Renderable, S extends ContainerMixinSt
 
 	/**
 	 * Append an renderable item as a child of this instance
+	 * @param child The child to append
 	 */
-	append(item: Renderable): Handle;
+	append(child: Renderable | Renderable[]): Handle;
 
 	/**
 	 * Insert a renderable item as a child of this instance
-	 * @param item The item to add as a child
+	 * @param child The child to add
 	 * @param position Where the item should be inserted in the children of this instance
 	 * @param reference When the posistion is `before` or `after` this is the reference item
 	 */
-	insert(item: Renderable, position: Position, reference?: Renderable): Handle;
+	insert(child: Renderable, position: Position, reference?: Renderable): Handle;
 
 	/**
 	 * A readonly list of children of this widget
@@ -44,85 +44,115 @@ export interface ContainerMixin<R extends Renderable, S extends ContainerMixinSt
 }
 
 export interface ContainerMixinFactory extends ComposeFactory<ContainerMixin<Renderable, ContainerMixinState>, ContainerMixinOptions<Renderable, ContainerMixinState>> {
+	/**
+	 * Create a new instance of a Container
+	 * @param options Any options to use during creation
+	 */
 	<R extends Renderable>(options?: ContainerMixinOptions<R, ContainerMixinState>): ContainerMixin<R, ContainerMixinState>;
 }
 
+/**
+ * A weak map of immutables Lists of children associated with containers
+ */
 const childrenMap = new WeakMap<ContainerMixin<Renderable, ContainerMixinState>, List<Renderable>>();
 
 /**
- * A utility function that returns a handle that removes an item as a child of the container
- * @param container The container to have the item removed
- * @param item The item to generate the removal handle for
+ * A utility function that generates a handle that destroys any children
  */
-function getRemoveItemHandle(container: ContainerMixin<Renderable, ContainerMixinState>, item: Renderable): Handle {
-	let destroyed = false;
-	return {
-		destroy() {
-			const children = childrenMap.get(container);
-			if (destroyed) {
-				return;
-			}
-			const idx = children.lastIndexOf(item);
-			if (idx > -1) {
-				childrenMap.set(container, children.delete(idx));
-			}
-			if (item.parent === container) {
-				item.parent = undefined;
-			}
-		}
-	};
-}
-
-const createContainerMixin: ContainerMixinFactory = createCachedRenderMixin
-	.mixin({
-		mixin: {
-			getChildrenNodes(): (VNode | string)[] {
-				const container: ContainerMixin<Renderable, ContainerMixinState> = this;
-				const results: (VNode | string)[] = [];
-				childrenMap.get(container).forEach((child) => results.push(child.render()));
-				return results;
-			},
-
-			append(item: Renderable): Handle {
-				const container: ContainerMixin<Renderable, ContainerMixinState> = this;
-				childrenMap.set(container, childrenMap.get(container).push(item));
-				item.parent = container;
-				return getRemoveItemHandle(container, item);
-			},
-
-			insert(item: Renderable, position: Position, reference?: Renderable): Handle {
-				const container: ContainerMixin<Renderable, ContainerMixinState> = this;
-				childrenMap.set(container, insertInList(childrenMap.get(container), item, position, reference));
-				item.parent = container;
-				return getRemoveItemHandle(container, item);
-			},
-
-			get children(): List<Renderable> {
-				return childrenMap.get(this);
-			}
-		},
-		initialize(instance: ContainerMixin<Renderable, ContainerMixinState>, options: ContainerMixinOptions<Renderable, ContainerMixinState>) {
-			/* add any children passed in the options */
-			childrenMap.set(instance, options && options.children ? List<Renderable>(options.children) : List<Renderable>());
-			childrenMap.get(instance).forEach((child) => child.parent = instance);
-		},
-		aspectAdvice: {
-			after: {
-				destroy(result: Promise<boolean>) {
-					const container: ContainerMixin<Renderable, ContainerMixinState> = this;
-					/* clean up the children of this widget */
-					return result.then((value) => {
-						const children = childrenMap.get(container);
-						children.forEach((child) => {
-							if (child.parent === container) {
-								child.parent = undefined;
-							}
-							child.destroy();
-						});
-						return value;
-					});
+function getRemoveFromContainerHandle(container: ContainerMixin<Renderable, ContainerMixinState>, renderable: Renderable | Renderable[]): Handle {
+	function getDestroyHandle(r: Renderable): Handle {
+		let destroyed = false;
+		return r.own({
+			destroy() {
+				if (destroyed) {
+					return;
+				}
+				const children = childrenMap.get(container);
+				const idx = children.lastIndexOf(r);
+				if (idx > -1) {
+					childrenMap.set(container, children.delete(idx));
+				}
+				destroyed = true;
+				if (r.parent === container) {
+					r.parent = undefined;
 				}
 			}
+		});
+	}
+
+	if (Array.isArray(renderable)) {
+		let destroyed = false;
+		const handles = renderable.map((r) => getDestroyHandle(r));
+		return {
+			destroy() {
+				if (destroyed) {
+					return;
+				}
+				handles.forEach((handle) => handle.destroy());
+				container.invalidate();
+				destroyed = true;
+			}
+		};
+	}
+	else {
+		const handle = getDestroyHandle(renderable);
+		return {
+			destroy() {
+				handle.destroy();
+				container.invalidate();
+			}
+		};
+	}
+}
+
+const createContainerMixin: ContainerMixinFactory = compose({
+		append(child: Renderable | Renderable[]): Handle {
+			const container: ContainerMixin<Renderable, ContainerMixinState> = this;
+			if (Array.isArray(child)) {
+				childrenMap.set(container, <List<any>> childrenMap.get(container).concat(child));
+				child.forEach((c) => c.parent = container);
+			}
+			else {
+				childrenMap.set(container, childrenMap.get(container).push(child));
+				child.parent = container;
+			}
+			return getRemoveFromContainerHandle(container, child);
+		},
+
+		insert(child: Renderable, position: Position, reference?: Renderable): Handle {
+			const container: ContainerMixin<Renderable, ContainerMixinState> = this;
+			childrenMap.set(container, insertInList(childrenMap.get(container), child, position, reference));
+			child.parent = container;
+			return getRemoveFromContainerHandle(container, child);
+		},
+
+		get children(): List<Renderable> {
+			return childrenMap.get(this);
+		}
+	}, (instance: ContainerMixin<Renderable, ContainerMixinState>, options: ContainerMixinOptions<Renderable, ContainerMixinState>) => {
+		/* add any children passed in the options */
+		childrenMap.set(instance, List<Renderable>());
+		if (options && options.children && options.children.length) {
+			instance.own(instance.append(options.children));
+		}
+
+		/* create handle the will destroy children */
+		instance.own({
+			destroy() {
+				const children = childrenMap.get(instance);
+				childrenMap.set(instance, List<Renderable>());
+				children.forEach((child) => child.destroy());
+			}
+		});
+	})
+	.mixin(createCachedRenderMixin)
+	.extend({
+		getChildrenNodes(): (VNode | string)[] {
+			const container: ContainerMixin<Renderable, ContainerMixinState> = this;
+			const results: (VNode | string)[] = [];
+			/* Converting immutable lists toArray() is expensive */
+			childrenMap.get(container).forEach((child) => results.push(child.render()));
+			return results;
 		}
 	});
 
