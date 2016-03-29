@@ -65,7 +65,6 @@ export interface StatefulFactory extends ComposeFactory<Stateful<State>, Statefu
 
 function setStatefulState(stateful: Stateful<State>, value: State) {
 	const state = deepAssign(stateWeakMap.get(stateful), value);
-	console.log(state);
 	stateful.emit({
 		type: 'statechange',
 		state,

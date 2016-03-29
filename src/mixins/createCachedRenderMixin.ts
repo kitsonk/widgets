@@ -87,7 +87,6 @@ const shadowStyles = new WeakMap<CachedRenderMixin<CachedRenderState>, StylesHas
 
 const createCachedRenderMixin: ComposeFactory<CachedRenderMixin<CachedRenderState>, StatefulOptions<CachedRenderState>> = createStateful
 	.mixin(createRenderable)
-	.mixin(createVNodeEvented)
 	.mixin({
 		mixin: {
 			getNodeAttributes(overrides?: VNodeProperties): VNodeProperties {
@@ -174,16 +173,15 @@ const createCachedRenderMixin: ComposeFactory<CachedRenderMixin<CachedRenderStat
 
 			parent: <CachedRenderParent> null
 		},
-		initialize(instance) {
+		initialize(instance: CachedRenderMixin<CachedRenderState>) {
 			dirtyMap.set(instance, true);
 			shadowClasses.set(instance, []);
-		},
-		aspectAdvice: {
-			after: {
-				setState() {
-					this.invalidate();
-				}
-			}
+		}
+	})
+	.mixin({
+		mixin: createVNodeEvented,
+		initialize(instance) {
+			instance.own(instance.on('statechange', () => { instance.invalidate(); } ));
 		}
 	});
 
