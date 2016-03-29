@@ -16,4 +16,7 @@ const doc = jsdom.jsdom(`
 /* Assign it to the global namespace */
 global.document = doc;
 
+/* Assign a global window as well */
+global.window = doc.defaultView;
+
 console.log('Loaded JSDOM...');

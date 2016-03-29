@@ -3,6 +3,7 @@ import * as assert from 'intern/chai!assert';
 import createStateful, { StateChangeEvent } from 'src/mixins/createStateful';
 import { Observable, Observer } from 'rxjs/Rx';
 import { Handle } from 'dojo-core/interfaces';
+import Promise from 'dojo-core/Promise';
 
 let _hasStrictModeCache: boolean;
 
@@ -105,6 +106,9 @@ registerSuite({
 							observer.next({ id: 'foo', foo: 'qat' });
 						}, 1);
 					});
+				},
+				patch(partial: any, options?: { id?: string }): Promise<Object> {
+					return Promise.resolve(partial);
 				}
 			};
 
@@ -137,6 +141,9 @@ registerSuite({
 					return new Observable<Object>(function subscribe(observer: Observer<Object>) {
 						observer.next({ id: 'foo', foo: 'foo' });
 					});
+				},
+				patch(partial: any, options?: { id?: string }): Promise<Object> {
+					return Promise.resolve(partial);
 				}
 			};
 

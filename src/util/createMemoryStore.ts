@@ -167,7 +167,7 @@ const createMemoryStore: MemoryStoreFactory = compose({
 					observerWeakMap.set(store, (observers ? observers : Map<StoreIndex, Observer<Object>[]>()).set(String(id), observerArray));
 				}
 				else {
-					observer.complete();
+					observer.error(new Error(`ID "${id}" not found in store`));
 				}
 			});
 		});

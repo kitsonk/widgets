@@ -1,5 +1,6 @@
 import './has!dom-requestanimationframe?:maquette/maquette-polyfills.min'; /* IE9 does not support RequestAnimationFrame */
 import { createProjector, VNode, Projector, h } from 'maquette/maquette';
+import { queueTask } from 'dojo-core/queue';
 import WeakMap from 'dojo-core/WeakMap';
 import { Handle } from 'dojo-core/interfaces';
 import compose from 'dojo-compose/compose';
@@ -104,8 +105,10 @@ export function attach(projector: Projector = defaultProjector): Handle {
 	if (projectorData.state === ProjectorState.Attached) {
 		return projectorData.handle;
 	}
-	projector.merge(projectorData.root, projectorData.render.bind(projectorData));
-	projectorData.state = ProjectorState.Attached;
+	queueTask(() => {
+		projector.merge(projectorData.root, projectorData.render.bind(projectorData));
+		projectorData.state = ProjectorState.Attached;
+	});
 	return projectorData.handle = {
 		destroy() {
 			detach(projector);
@@ -130,9 +133,9 @@ function getRemoveFromProjectorHandle(projector: Projector, projectorData: Proje
 					projectorData.children.splice(idx, 1);
 				}
 				destroyed = true;
-				if (r.parent === projector) {
-					r.parent === undefined;
-				}
+				// if (r.parent === projector) {
+				// 	r.parent === undefined;
+				// }
 				scheduleRender(projector);
 			}
 		});
@@ -165,7 +168,7 @@ export function append(renderable: Renderable | Renderable[], projector: Project
 	const renderables: Renderable[] = Array.isArray(renderable) ? renderable : [ renderable ];
 	const projectorData = getProjectorData(projector);
 	projectorData.children = projectorData.children.concat(renderables);
-	renderables.forEach((renderable) => renderable.parent = projector);
+	// renderables.forEach((renderable) => renderable.parent = projector);
 	return getRemoveFromProjectorHandle(projector, projectorData, renderable);
 }
 
@@ -181,7 +184,7 @@ export function append(renderable: Renderable | Renderable[], projector: Project
 export function insert(renderable: Renderable, position: Position, reference?: Renderable, projector: Projector = defaultProjector): Handle {
 	const projectorData = getProjectorData(projector);
 	insertInArray(projectorData.children, renderable, position, reference);
-	renderable.parent = projector;
+	// renderable.parent = projector;
 	return renderable.own(getRemoveFromProjectorHandle(projector, projectorData, renderable));
 }
 

@@ -48,14 +48,14 @@ registerSuite({
 			}
 		});
 
-		assert.deepEqual(formfield.getNodeAttributes(), { type: 'foo', value: 'bar', name: 'baz' });
+		assert.deepEqual(formfield.getNodeAttributes(), { type: 'foo', value: 'bar', name: 'baz', classes: {}, styles: {} });
 
 		formfield.setState({ disabled: true });
 
-		assert.deepEqual(formfield.getNodeAttributes(), { type: 'foo', value: 'bar', name: 'baz', disabled: 'disabled' });
+		assert.deepEqual(formfield.getNodeAttributes(), { type: 'foo', value: 'bar', name: 'baz', disabled: 'disabled', classes: {}, styles: {} });
 
 		formfield.setState({ disabled: false });
 
-		assert.deepEqual(formfield.getNodeAttributes(), { type: 'foo', value: 'bar', name: 'baz' });
+		assert.deepEqual(formfield.getNodeAttributes(), { type: 'foo', value: 'bar', name: 'baz', classes: {}, styles: {} });
 	}
 });

@@ -2,7 +2,8 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import createRenderable, { isRenderable } from 'src/mixins/createRenderable';
 import createContainerMixin from 'src/mixins/createContainerMixin';
-import { h, createProjector } from 'maquette/maquette';
+import { h } from 'maquette/maquette';
+import { createProjector } from 'src/projector';
 
 registerSuite({
 	name: 'mixins/createRenderable',

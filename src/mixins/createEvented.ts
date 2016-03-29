@@ -84,7 +84,7 @@ export function resolveEventListener<E extends EventObject>(listener: EventedLis
 	} : <any> listener;
 }
 
-const createEvented: EventedFactory = compose<any, EventedOptions>({
+const createEvented: EventedFactory = compose({
 		emit<T extends EventObject>(event: T): void {
 			const method = listenersMap.get(this)[event.type];
 			if (method) {

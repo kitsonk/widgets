@@ -1,10 +1,7 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
-import { Projector, VNode } from 'maquette/maquette';
-import { append, isProjector } from '../util/vdom';
-import { ContainerMixin, ContainerMixinState } from './createContainerMixin';
+import { VNode } from 'maquette/maquette';
 import createDestroyable, { Destroyable } from './createDestroyable';
-
-export type Parent = Projector | ContainerMixin<Renderable, ContainerMixinState>;
+import { ParentMixin } from './createParentMixin';
 
 export interface RenderFunction {
 	(): VNode;
@@ -18,7 +15,7 @@ export interface RenderableOptions {
 
 	tagName?: string;
 
-	parent?: Parent;
+	parent?: ParentMixin<Renderable>;
 }
 
 export interface Renderable extends Destroyable {
@@ -29,7 +26,7 @@ export interface Renderable extends Destroyable {
 
 	tagName: string;
 
-	parent: Parent;
+	parent: ParentMixin<Renderable>;
 }
 
 export interface RenderableFactory extends ComposeFactory<Renderable, RenderableOptions> { }
@@ -43,7 +40,7 @@ const createRenderable: RenderableFactory = compose({
 
 		tagName: 'div',
 
-		parent: <Parent> null
+		parent: <ParentMixin<Renderable>> null
 	}, (instance: Renderable, options: RenderableOptions) => {
 		if (options && options.tagName) {
 			instance.tagName = options.tagName;
@@ -60,13 +57,7 @@ const createRenderable: RenderableFactory = compose({
 					instance.tagName = options.tagName;
 				}
 				if (options.parent) {
-					const parent = options.parent;
-					if (isProjector(parent)) {
-						instance.own(append(instance, parent));
-					}
-					else {
-						parent.append(instance);
-					}
+					options.parent.append(instance);
 				}
 			}
 		}

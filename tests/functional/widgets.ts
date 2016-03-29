@@ -1,6 +1,6 @@
 import createButton from 'src/createButton';
 import createTextInput from 'src/createTextInput';
-import { attach, append } from 'src/util/vdom';
+import projector from 'src/projector';
 
 const output = (<HTMLPreElement> document.getElementById('output'));
 
@@ -26,9 +26,9 @@ input.on('input', (e: UIEvent) => {
 	output.innerHTML = JSON.stringify(input.state);
 });
 
-append(button);
-append(input);
+projector.append(button);
+projector.append(input);
 
-attach();
+projector.attach();
 
 document.getElementsByTagName('body')[0].className += ' loaded';

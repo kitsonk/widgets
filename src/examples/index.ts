@@ -4,8 +4,11 @@ import createButton from 'src/createButton';
 import createTextInput from 'src/createTextInput';
 import createList from 'src/createList';
 import createContainer from 'src/createContainer';
+import createLayoutContainer from 'src/createLayoutContainer';
+import createPanel from 'src/createPanel';
+import createResizePanel from 'src/createResizePanel';
 import { Renderable } from 'src/mixins/createRenderable';
-import { attach, append } from 'src/util/vdom';
+import projector from 'src/projector';
 
 /**
  * List items to populate list widget
@@ -29,6 +32,10 @@ const widgetStore = createMemoryStore({
 		{ id: 'add', label: 'Add', name: 'add' },
 		{ id: 'list', items: listItems },
 		{ id: 'container' },
+		{ id: 'layout-horizontal', classes: [ 'horizontal' ] },
+		{ id: 'fixed-panel', classes: [ 'fixed' ] },
+		{ id: 'resize-panel', classes: [ 'vertical' ], width: '200px' },
+		{ id: 'fixed-panel-2', classes: [ 'fixed' ] },
 		{ id: 'bar', label: 'I am contained' },
 		{ id: 'change-text', label: 'Change' }
 	]
@@ -112,6 +119,48 @@ container.append(createButton({
 
 widgets.push(container);
 
+const layoutContainer = createLayoutContainer({
+	id: 'layout-horizontal',
+	stateFrom: widgetStore
+});
+
+const fixedPanel = createPanel({
+	id: 'fixed-panel',
+	stateFrom: widgetStore
+});
+
+const resizePanel = createResizePanel({
+	id: 'resize-panel',
+	stateFrom: widgetStore
+});
+
+resizePanel.append(createWidget({
+	tagName: 'div',
+	state: {
+		label: 'foo'
+	}
+}));
+
+fixedPanel.append(resizePanel);
+
+const fixedPanel2 = createPanel({
+	id: 'fixed-panel-2',
+	stateFrom: widgetStore
+});
+
+fixedPanel2.append(createWidget({
+	tagName: 'div',
+	state: {
+		label: 'bar'
+	}
+}));
+
+fixedPanel.append(fixedPanel2);
+
+layoutContainer.append(fixedPanel);
+
+widgets.push(layoutContainer);
+
 /* On click handler for remove button */
 buttonRemove.on('click', (e: MouseEvent) => {
 	listItems.pop();
@@ -121,13 +170,14 @@ buttonRemove.on('click', (e: MouseEvent) => {
 
 /* On click handler for add button */
 buttonAdd.on('click', (e: MouseEvent) => {
+	console.log('foo');
 	listItems.push({ id: ++id, label: textInput.state.value });
 	widgetStore.patch({ id: 'list', items: listItems });
 	return true;
 });
 
 /* Append widgets to projector */
-append(widgets);
+projector.append(widgets);
 
 /* Attach projector to DOM */
-attach();
+projector.attach();

@@ -2,8 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import createCachedRenderMixin from 'src/mixins/createCachedRenderMixin';
 import { before } from 'dojo-core/aspect';
-import { createProjector } from 'maquette/maquette';
-import { attach } from 'src/util/vdom';
+import { createProjector } from 'src/projector';
 
 registerSuite({
 	name: 'mixins/createCachedRenderMixin',
@@ -21,7 +20,7 @@ registerSuite({
 		};
 		const cachedRender = createCachedRenderMixin({
 			listeners: { click },
-			state: { id: 'foo' }
+			state: { id: 'foo', classes: [ 'bar' ] }
 		});
 
 		let nodeAttributes = cachedRender.getNodeAttributes();
@@ -29,16 +28,19 @@ registerSuite({
 		assert.isFunction(nodeAttributes.onclick);
 		nodeAttributes.onclick();
 		assert.strictEqual(count, 1);
-		assert.strictEqual(Object.keys(nodeAttributes).length, 2);
+		assert.deepEqual(nodeAttributes.classes, { bar: true });
+		assert.strictEqual(Object.keys(nodeAttributes).length, 4);
 
 		nodeAttributes = cachedRender.getNodeAttributes({
 			name: 'foo',
-			id: 'bar'
+			id: 'bar',
+			classes: { foo: false }
 		});
 
 		assert.strictEqual(nodeAttributes.name, 'foo');
 		assert.strictEqual(nodeAttributes.id, 'bar');
-		assert.strictEqual(Object.keys(nodeAttributes).length, 3);
+		assert.deepEqual(nodeAttributes.classes, { foo: false });
+		assert.strictEqual(Object.keys(nodeAttributes).length, 5);
 	},
 	'getChildrenNodes()'() {
 		const cachedRender = createCachedRenderMixin();
@@ -64,7 +66,7 @@ registerSuite({
 		assert.deepEqual(result1, result3);
 		assert.deepEqual(result2, result4);
 		assert.deepEqual(result1, {vnodeSelector: 'div',
-			properties: { id: 'foo' },
+			properties: { id: 'foo', classes: {}, styles: {} },
 			children: undefined,
 			text: 'foo',
 			domNode: null
@@ -73,10 +75,10 @@ registerSuite({
 	'invalidate invalidates parent projector'() {
 		let count = 0;
 		const projector = createProjector({});
-		before(projector, 'scheduleRender', () => {
+		before(projector, 'invalidate', () => {
 			count++;
 		});
-		attach(projector);
+		projector.attach();
 		const cachedRender = createCachedRenderMixin();
 		cachedRender.parent = projector;
 		cachedRender.invalidate();

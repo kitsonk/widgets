@@ -25,6 +25,10 @@ export interface Destroyable {
 	destroy(): Promise<boolean>;
 }
 
+export function isDestroyable(value: any): value is Destroyable {
+	return value && 'destroy' in value && typeof value.destroy === 'function';
+}
+
 const createDestroyable: ComposeFactory<Destroyable, any> = compose({
 	own(handle: Handle): Handle {
 		const handles = handlesWeakMap.get(this);

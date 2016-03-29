@@ -4,3 +4,53 @@ html, body {
 	height: 100%;
 	width: 100%;
 }
+
+body {
+	margin: 0;
+	overflow: hidden;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+dojo-container-layout {
+	display: flex;
+	height: 100%;
+}
+
+dojo-panel {
+	display: flex;
+	flex: 1;
+}
+
+dojo-panel-resize {
+	min-width: 100px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	height: initial;
+	z-index: 2;
+}
+
+.fixed {
+	flex: 0;
+}
+
+.horizontal {
+	flex-direction: row;
+}
+
+.vertical {
+	flex-direction: column;
+
+	& > dojo-resize-handle {
+		right: -5px;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 10px;
+		cursor: col-resize;
+		z-index: 3;
+	}
+}

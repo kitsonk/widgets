@@ -1,5 +1,6 @@
-import { Observable } from 'rxjs/Rx';
+import { Observable, Subscription } from 'rxjs/Rx';
 import compose, { ComposeFactory } from 'dojo-compose/compose';
+import Promise from 'dojo-core/Promise';
 import WeakMap from 'dojo-core/WeakMap';
 import { deepAssign } from 'dojo-core/lang';
 import { EventObject, Handle } from 'dojo-core/interfaces';
@@ -13,6 +14,7 @@ export interface State {
 
 export interface ObservableState<S> {
 	observe(id: string): Observable<S>;
+	patch(partial: any, options?: { id?: string }): Promise<S>;
 }
 
 export interface StatefulOptions<S extends State> extends EventedOptions {
@@ -39,7 +41,7 @@ export interface Stateful<S extends State> extends Evented {
 	 * If you wish to "clear" a value, you should pass it as undefined.
 	 * @param value The partial state to be set
 	 */
-	setState(value: S): S;
+	setState(value: S): void;
 
 	/**
 	 * Observe the state from an object that allows the observation
@@ -61,33 +63,86 @@ export interface StatefulFactory extends ComposeFactory<Stateful<State>, Statefu
 	<S extends State>(options?: StatefulOptions<S>): Stateful<S>;
 }
 
+function setStatefulState(stateful: Stateful<State>, value: State) {
+	const state = deepAssign(stateWeakMap.get(stateful), value);
+	console.log(state);
+	stateful.emit({
+		type: 'statechange',
+		state,
+		target: stateful
+	});
+	return state;
+}
+
+interface ObservedState {
+	id: string;
+	observable: ObservableState<State>;
+	subscription: Subscription;
+	handle: Handle;
+}
+
+const observedStateMap = new WeakMap<Stateful<State>, ObservedState>();
+
+function unobserve(stateful: Stateful<State>) {
+	const observedState = observedStateMap.get(stateful);
+	if (observedState) {
+		observedState.handle.destroy();
+	}
+}
+
 const createStateful: StatefulFactory = compose({
 		get state(): any {
 			return stateWeakMap.get(this);
 		},
 
-		setState(value: State): State {
+		setState(value: State): void {
 			const stateful: Stateful<any> = this;
-			const state = deepAssign(stateWeakMap.get(stateful), value);
-			stateful.emit({
-				type: 'statechange',
-				state,
-				target: stateful
-			});
-			return state;
+			const observedState = observedStateMap.get(stateful);
+			if (observedState) {
+				observedState.observable.patch(value, { id: observedState.id });
+			}
+			else {
+				setStatefulState(stateful, value);
+			}
 		},
 
-		observeState(id: string, observable: ObservableState<any>): Handle {
+		observeState(id: string, observable: ObservableState<State>): Handle {
 			const stateful: Stateful<any> = this;
-			let subscription = observable.observe(id).subscribe((item: Object) => {
-				stateful.setState(item);
-			});
-			return {
-				destroy() {
-					subscription && subscription.unsubscribe();
-					subscription = undefined;
+			let observedState = observedStateMap.get(stateful);
+			if (observedState) {
+				if (observedState.id === id && observedState.observable === observable) {
+					return observedState.handle;
+				}
+				throw new Error('Already observing state.');
+			}
+			observedState = {
+				id,
+				observable,
+				subscription: observable.observe(id).subscribe((item: State) => {
+					console.log('statechange', id);
+					setStatefulState(stateful, item);
+				}, (err) => { /* error handler */
+					stateful.emit({
+						type: 'error',
+						target: stateful,
+						error: err
+					});
+					unobserve(stateful);
+				}, () => { /* completed handler */
+					unobserve(stateful);
+				}),
+				handle: {
+					destroy() {
+						const observedState = observedStateMap.get(stateful);
+						if (observedState) {
+							observedState.subscription.unsubscribe();
+							observedStateMap.delete(stateful);
+						}
+					}
 				}
 			};
+			observedStateMap.set(stateful, observedState);
+			return observedState.handle;
 		}
 	}, (instance: Stateful<State>, options: StatefulOptions<State>) => {
 		const state = {};

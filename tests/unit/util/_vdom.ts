@@ -1,6 +1,6 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import { attach, append, insert, clear, setRoot, scheduleRender } from 'src/util/vdom';
+import { attach, append, insert, clear, setRoot, scheduleRender } from 'src/util/_vdom';
 import { createProjector, h } from 'maquette/maquette';
 import createRenderable from 'src/mixins/createRenderable';
 

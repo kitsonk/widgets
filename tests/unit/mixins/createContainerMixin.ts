@@ -144,7 +144,10 @@ registerSuite({
 			'foo',
 			{
 				vnodeSelector: 'div',
-				properties: {},
+				properties: {
+					classes: {},
+					styles: {}
+				},
 				children: undefined,
 				text: 'bar',
 				domNode: null

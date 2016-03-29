@@ -26,11 +26,17 @@ registerSuite({
 		container.append(createContainer());
 		assert.deepEqual(container.render(), {
 			vnodeSelector: 'dojo-container',
-			properties: {},
+			properties: {
+				classes: {},
+				styles: {}
+			},
 			children: [
 				{
 					vnodeSelector: 'dojo-container',
-					properties: {},
+					properties: {
+						classes: {},
+						styles: {}
+					},
 					children: [],
 					text: undefined,
 					domNode: null
