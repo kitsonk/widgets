@@ -46,7 +46,7 @@ registerSuite({
 		assert(stateful);
 		assert.isObject(stateful.state, 'state should be an object');
 		assert.isFunction(stateful.setState, 'setState should be a function');
-		assert.deepEqual(stateful.setState(state), state, 'return from setState should be deep equal');
+		assert.isUndefined(stateful.setState(state), 'return from setState should be undefined');
 		assert.notStrictEqual(stateful.state, state, 'state should be deep assigned');
 		assert.deepEqual(stateful.state, state, 'state should deeply equal state');
 	},

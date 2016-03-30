@@ -216,8 +216,8 @@ registerSuite({
 
 			setTimeout(dfd.callback(() => {
 				assert.strictEqual(callbackCount, 0);
-				assert.strictEqual(errorCount, 0);
-				assert.strictEqual(completeCount, 1);
+				assert.strictEqual(errorCount, 1);
+				assert.strictEqual(completeCount, 0);
 			}), 10);
 		}
 	},

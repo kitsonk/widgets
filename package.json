@@ -33,7 +33,7 @@
 		"grunt-text-replace": "0.4.0",
 		"grunt-ts": "5.3.2",
 		"grunt-tslint": "3.0.3",
-		"intern": "theintern/intern#75c1472d6d1e3fcf7b1ed7f92deb14ea8b631a44",
+		"intern": "theintern/intern#942baa040a824477f1cda55abd9d029553873db5",
 		"istanbul": "0.4.2",
 		"jsdom": "7.2.2",
 		"remap-istanbul": "0.5.1",
