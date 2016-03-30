@@ -139,8 +139,8 @@ export const createProjector = compose<any, ProjectorOptions>({
 	.mixin({
 		mixin: createVNodeEvented,
 		initialize(instance: Projector) {
-			instance.on('mousemove', function () {});
-			instance.on('mouseup', function () {});
+			instance.on('touchend', function () {});
+			instance.on('touchmove', function () {});
 		}
 	});
 
