@@ -170,7 +170,6 @@ buttonRemove.on('click', (e: MouseEvent) => {
 
 /* On click handler for add button */
 buttonAdd.on('click', (e: MouseEvent) => {
-	console.log('foo');
 	listItems.push({ id: ++id, label: textInput.state.value });
 	widgetStore.patch({ id: 'list', items: listItems });
 	return true;

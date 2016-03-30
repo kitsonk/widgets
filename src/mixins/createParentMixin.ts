@@ -10,7 +10,7 @@ export interface ParentMixinOptions<C extends Child> {
 }
 
 export interface Child extends Destroyable {
-	parent: ParentMixin<any>;
+	parent?: ParentMixin<any>;
 }
 
 export interface ParentMixin<C> extends Destroyable {
@@ -39,7 +39,7 @@ export interface ParentMixin<C> extends Destroyable {
 	insert(child: C, position: Position, reference?: C): Handle;
 }
 
-export interface ParentMixinFactory<C extends Child> extends ComposeFactory<ParentMixin<C>, ParentMixinOptions<C>> { }
+export interface ParentMixinFactory extends ComposeFactory<ParentMixin<any>, ParentMixinOptions<any>> { }
 
 const childrenMap = new WeakMap<ParentMixin<Child>, List<Child>>();
 
@@ -90,7 +90,7 @@ function getRemoveHandle(parent: ParentMixin<Child>, child: Child | Child[]): Ha
 	}
 }
 
-const createParentMixin: ParentMixinFactory<Child> = compose({
+const createParentMixin: ParentMixinFactory = compose({
 		get children(): List<Child> {
 			return childrenMap.get(this);
 		},
