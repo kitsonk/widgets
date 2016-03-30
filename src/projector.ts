@@ -31,6 +31,7 @@ export interface Projector extends VNodeEvented, ParentMixin<RenderableChild> {
 	tagName?: string;
 	classes?: string[];
 	styles?: { [style: string]: string; };
+	document: Document;
 }
 
 export interface ProjectorFactory extends ComposeFactory<Projector, ProjectorOptions> { }
@@ -117,6 +118,10 @@ export const createProjector = compose<any, ProjectorOptions>({
 		},
 		get projector(): MaquetteProjector {
 			return projectorDataMap.get(this).projector;
+		},
+		get document(): Document {
+			const projectorData = projectorDataMap.get(this);
+			return projectorData && projectorData.root && projectorData.root.ownerDocument;
 		}
 	})
 	.mixin({

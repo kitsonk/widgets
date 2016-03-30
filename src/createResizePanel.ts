@@ -25,7 +25,7 @@ export interface ResizePanel extends Widget<ResizePanelState>, ContainerMixin<Re
 export interface ResizePanelFactory extends ComposeFactory<ResizePanel, ResizePanelOptions> { }
 
 const resizeNodePropertiesMap = new WeakMap<ResizePanel, VNodeProperties>();
-const resizingMap = new WeakMap<ResizePanel, { width: string, x: number }>();
+const resizingMap = new WeakMap<ResizePanel, { width: string, clientX: number }>();
 
 function getProjector(resizePanel: ResizePanel): Projector {
 	let child: any = resizePanel;
@@ -39,18 +39,6 @@ function setResizeListeners(resizePanel: ResizePanel): Handle {
 
 	let onmouseupHandle: Handle;
 	let onmousemoveHandle: Handle;
-
-	function onmousedownListener(evt: MouseEvent): boolean {
-		if (!resizingMap.get(resizePanel)) {
-			evt.preventDefault();
-			const projector = getProjector(resizePanel);
-			resizingMap.set(resizePanel, { width: resizePanel.width, x: evt.x });
-			onmouseupHandle = projector.on('mouseup', onmouseupListener);
-			onmousemoveHandle = projector.on('mousemove', onmousemoveListener);
-			resizePanel.invalidate();
-			return true;
-		}
-	}
 
 	function onmouseupListener(evt: MouseEvent): boolean {
 		if (resizingMap.get(resizePanel)) {
@@ -67,7 +55,21 @@ function setResizeListeners(resizePanel: ResizePanel): Handle {
 		const originalWidth = resizingMap.get(resizePanel);
 		if (originalWidth) {
 			evt.preventDefault();
-			resizePanel.width = (parseInt(originalWidth.width, 10) + (evt.x - originalWidth.x)) + 'px';
+			resizePanel.width = String(parseInt(originalWidth.width, 10) + evt.clientX - originalWidth.clientX) + 'px';
+			return true;
+		}
+	}
+
+	function onmousedownListener(evt: MouseEvent): boolean {
+		if (!resizingMap.get(resizePanel)) {
+			evt.preventDefault();
+			const projector = getProjector(resizePanel);
+			resizingMap.set(resizePanel, { width: resizePanel.width, clientX: evt.clientX });
+			if (projector.document) {
+				onmouseupHandle = on(projector.document, 'onmouseup', onmouseupListener);
+				onmousemoveHandle = on(projector.document, 'onmousemove', onmousemoveListener);
+			}
+			resizePanel.invalidate();
 			return true;
 		}
 	}

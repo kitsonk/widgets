@@ -118,7 +118,6 @@ const createStateful: StatefulFactory = compose({
 				id,
 				observable,
 				subscription: observable.observe(id).subscribe((item: State) => {
-					console.log('statechange', id);
 					setStatefulState(stateful, item);
 				}, (err) => { /* error handler */
 					stateful.emit({
