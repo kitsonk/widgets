@@ -7,15 +7,26 @@
 </head>
 <body class="basic">
 	<dojo-container-layout class="horizontal">
-		<dojo-container-panel class="fixed">
-			<dojo-panel-resize class="vertical" style="width: 200px;">
-				<div>foo</div>
-				<dojo-resize-handle></dojo-resize-handle>
-			</dojo-panel-resize>
-		</dojo-container-panel>
-		<dojo-container-panel>
-			<div>bar</div>
-		</dojo-container-panel>
+		<dojo-panel-tabbed>
+			<ul>
+				<li class="active">
+					<div class="tab-label">Panel One</div>
+					<div class="tab-close">X</div>
+				</li>
+				<li>
+					<div class="tab-label">Panel Two</div>
+					<div class="tab-close">X</div>
+				</li>
+				<li>
+					<div class="tab-label">Panel Three</div>
+					<div class="tab-close">X</div>
+				</li>
+			</ul>
+			<div class="panels">
+				<dojo-panel class="visible">foo</dojo-panel>
+				<dojo-panel>bar</dojo-panel>
+			</div>
+		</dojo-panel-tabbed>
 	</dojo-container-layout>
 </body>
 </html>

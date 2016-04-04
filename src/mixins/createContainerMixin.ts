@@ -1,27 +1,31 @@
 import { VNode } from 'maquette/maquette';
 import { ComposeFactory } from 'dojo-compose/compose';
 import createCachedRenderMixin, { CachedRenderMixin, CachedRenderState } from './createCachedRenderMixin';
-import createParentMixin, { ParentMixinOptions, ParentMixin } from './createParentMixin';
+import createParentMixin, { ParentMixinOptions, ParentMixin, Child } from './createParentMixin';
 import { Renderable } from './createRenderable';
 import { StatefulOptions } from './createStateful';
 
-export interface ContainerMixinOptions<R extends Renderable, S extends ContainerMixinState> extends StatefulOptions<S>, ParentMixinOptions<R> { }
+export interface ContainerChild extends Child {
+	parent?: ParentMixin<this>;
+}
+
+export interface ContainerMixinOptions<S extends ContainerMixinState> extends StatefulOptions<S>, ParentMixinOptions<ContainerChild> { }
 
 export interface ContainerMixinState extends CachedRenderState { }
 
-export interface ContainerMixin<R extends Renderable, S extends ContainerMixinState> extends CachedRenderMixin<S>, ParentMixin<R> {
+export interface ContainerMixin<C extends ContainerChild, S extends ContainerMixinState> extends CachedRenderMixin<S>, ParentMixin<C> {
 	/**
 	 * Return an array of VNodes/strings the represent the rendered results of the children of this instance
 	 */
 	getChildrenNodes(): (VNode | string)[];
 }
 
-export interface ContainerMixinFactory extends ComposeFactory<ContainerMixin<Renderable, ContainerMixinState>, ContainerMixinOptions<Renderable, ContainerMixinState>> {
+export interface ContainerMixinFactory extends ComposeFactory<ContainerMixin<ContainerChild, ContainerMixinState>, ContainerMixinOptions<ContainerMixinState>> {
 	/**
 	 * Create a new instance of a Container
 	 * @param options Any options to use during creation
 	 */
-	<R extends Renderable>(options?: ContainerMixinOptions<R, ContainerMixinState>): ContainerMixin<R, ContainerMixinState>;
+	<R extends ContainerChild>(options?: ContainerMixinOptions<ContainerMixinState>): ContainerMixin<R, ContainerMixinState>;
 }
 
 const createContainerMixin: ContainerMixinFactory = createParentMixin

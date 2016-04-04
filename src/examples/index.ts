@@ -1,43 +1,25 @@
 import createMemoryStore from 'src/util/createMemoryStore';
 import createWidget from 'src/createWidget';
-import createButton from 'src/createButton';
-import createTextInput from 'src/createTextInput';
-import createList from 'src/createList';
-import createContainer from 'src/createContainer';
-import createLayoutContainer from 'src/createLayoutContainer';
 import createPanel from 'src/createPanel';
-import createResizePanel from 'src/createResizePanel';
+import createTabbedPanel from 'src/createTabbedPanel';
 import { Renderable } from 'src/mixins/createRenderable';
 import projector from 'src/projector';
-
-/**
- * List items to populate list widget
- */
-const listItems = [
-	{ id: 1, label: 'foo' },
-	{ id: 2, label: 'bar' },
-	{ id: 3, label: 'baz' },
-	{ id: 4, label: 'qux' },
-	{ id: 5, label: 'norf' }
-];
 
 /**
  * A memory store which handles the widget states
  */
 const widgetStore = createMemoryStore({
 	data: [
-		{ id: 'foo', label: 'dojo-widget Examples'},
-		{ id: 'remove', label: 'Remove', name: 'remove', disabled: true },
-		{ id: 'first-name', name: 'first-name', value: 'qat' },
-		{ id: 'add', label: 'Add', name: 'add' },
-		{ id: 'list', items: listItems },
-		{ id: 'container' },
-		{ id: 'layout-horizontal', classes: [ 'horizontal' ] },
-		{ id: 'fixed-panel', classes: [ 'fixed' ] },
-		{ id: 'resize-panel', classes: [ 'vertical' ], width: '200px' },
-		{ id: 'fixed-panel-2', classes: [ 'fixed' ] },
-		{ id: 'bar', label: 'I am contained' },
-		{ id: 'change-text', label: 'Change' }
+		{ id: 'title', label: 'dojo-widget Examples'},
+		{ id: 'tabbed-panel' },
+		{ id: 'panel-1', label: 'foo' },
+		{ id: 'foo', label: 'Validus os indoles. Demoveo ventosus illum ut refoveo saepius antehabeo euismod gravis aliquam ea aliquip. Autem ratis verto. Accumsan refero capio ludus consequat tincidunt roto modo ea dolore. Ad iustum blandit.' },
+		{ id: 'panel-2', label: 'bar foo qut qux quux', active: true },
+		{ id: 'bar', label: 'Si at humo euismod fatua melior praesent praemitto camur foras eros. Esca multo transverbero facilisi nisl exputo nisl.' },
+		{ id: 'panel-3', label: 'qat' },
+		{ id: 'baz', label: 'Odio vel inhibeo nostrud. Ad duis blandit facilisi hos multo nobis quibus zelus bene. Ideo veniam eum iriure ymo.' },
+		{ id: 'panel-4', label: 'baz' },
+		{ id: 'qat', label: 'Sit pertineo at facilisis quidne qui et amet duis. Patria meus proprius immitto ne appellatio cogo jus. Cui genitus sudo. Suscipit abdo dignissim huic accumsan importunus inhibeo luptatum ut neque augue sagaciter. Iaceo odio exerci natu nonummy vel iaceo odio erat.' }
 	]
 });
 
@@ -47,133 +29,68 @@ const widgets: Renderable[] = [];
  * Header widget
  */
 widgets.push(createWidget({
-	id: 'foo',
+	id: 'title',
 	stateFrom: widgetStore,
 	tagName: 'h1'
 }));
 
-/**
- * Removes item from list when clicked
- */
-const buttonRemove = createButton({
-	id: 'remove',
+const tabbedPanel = createTabbedPanel({
+	id: 'tabbed-panel',
 	stateFrom: widgetStore
 });
 
-widgets.push(buttonRemove);
+widgets.push(tabbedPanel);
 
-/**
- * Text input for labels for items added to list
- */
-const textInput = createTextInput({
-	id: 'first-name',
+const panel1 = createPanel({
+	id: 'panel-1',
 	stateFrom: widgetStore
 });
 
-widgets.push(textInput);
+panel1.append(createWidget({
+	id: 'foo',
+	stateFrom: widgetStore
+}));
 
-/**
- * Button adds item to list
- */
-const buttonAdd = createButton({
-	id: 'add',
+tabbedPanel.append(panel1);
+
+const panel2 = createPanel({
+	id: 'panel-2',
 	stateFrom: widgetStore
 });
 
-widgets.push(buttonAdd);
-
-/**
- * ID counter for items
- */
-let id = 5;
-
-/**
- * List item widget
- */
-const list = createList({
-	id: 'list',
-	stateFrom: widgetStore
-});
-
-widgets.push(list);
-
-const container = createContainer({
-	id: 'container',
-	stateFrom: widgetStore
-});
-
-container.append(createWidget({
+panel2.append(createWidget({
 	id: 'bar',
 	stateFrom: widgetStore
 }));
 
-container.append(createButton({
-	id: 'change-text',
-	stateFrom: widgetStore,
-	listeners: {
-		click() {
-			widgetStore.patch({ id: 'bar', label: 'And I changed!' });
-		}
-	}
+tabbedPanel.append(panel2);
+
+const panel3 = createPanel({
+	id: 'panel-3',
+	stateFrom: widgetStore
+});
+
+panel3.append(createWidget({
+	id: 'baz',
+	stateFrom: widgetStore
 }));
 
-widgets.push(container);
+tabbedPanel.append(panel3);
 
-const layoutContainer = createLayoutContainer({
-	id: 'layout-horizontal',
+const panel4 = createPanel({
+	id: 'panel-4',
 	stateFrom: widgetStore
 });
 
-const fixedPanel = createPanel({
-	id: 'fixed-panel',
+panel4.append(createWidget({
+	id: 'qat',
 	stateFrom: widgetStore
-});
-
-const resizePanel = createResizePanel({
-	id: 'resize-panel',
-	stateFrom: widgetStore
-});
-
-resizePanel.append(createWidget({
-	tagName: 'div',
-	state: {
-		label: 'foo'
-	}
 }));
 
-fixedPanel.append(resizePanel);
+tabbedPanel.append(panel4);
 
-const fixedPanel2 = createPanel({
-	id: 'fixed-panel-2',
-	stateFrom: widgetStore
-});
-
-fixedPanel2.append(createWidget({
-	tagName: 'div',
-	state: {
-		label: 'bar'
-	}
-}));
-
-fixedPanel.append(fixedPanel2);
-
-layoutContainer.append(fixedPanel);
-
-widgets.push(layoutContainer);
-
-/* On click handler for remove button */
-buttonRemove.on('click', (e: MouseEvent) => {
-	listItems.pop();
-	widgetStore.patch({ id: 'list', items: listItems });
-	return true;
-});
-
-/* On click handler for add button */
-buttonAdd.on('click', (e: MouseEvent) => {
-	listItems.push({ id: ++id, label: textInput.state.value });
-	widgetStore.patch({ id: 'list', items: listItems });
-	return true;
-});
+/* debug logging */
+projector.on('schedulerender', () => { console.log('scheduleRender()'); });
 
 /* Append widgets to projector */
 projector.append(widgets);

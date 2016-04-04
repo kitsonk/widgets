@@ -12,7 +12,7 @@ export interface WidgetState extends CachedRenderState { }
 export interface WidgetOptions<S extends WidgetState> extends StatefulOptions<S>, EventedOptions, RenderableOptions { }
 
 export interface Widget<S extends WidgetState> extends Stateful<S>, Destroyable, Evented, Renderable, VNodeEvented, CachedRenderMixin<S> {
-	parent: CachedRenderParent;
+	parent?: CachedRenderParent;
 
 	on(type: 'statechange', listener: EventedListener<StateChangeEvent<S>>): Handle;
 	on(type: string, listener: EventedListener<EventObject>): Handle;

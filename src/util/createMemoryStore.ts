@@ -101,6 +101,12 @@ const observerWeakMap = new WeakMap<MemoryStore<Object>, Map<StoreIndex, Observe
 
 export interface MemoryStoreFactory extends ComposeFactory<MemoryStore<Object>, MemoryStoreOptions<Object>> {
 	<T extends Object>(options?: MemoryStoreOptions<T>): MemoryStore<T>;
+
+	/**
+	 * Creates a memory store from an array of objects
+	 * @params data The array of data to create the memory store from
+	 */
+	fromArray<T extends Object>(data: T[]): MemoryStore<T>;
 }
 
 /**
@@ -269,14 +275,10 @@ const createMemoryStore: MemoryStoreFactory = compose({
 			instance.fromArray(options.data);
 		}
 	}
+}).static({
+	fromArray(data: any[]): MemoryStore<any> {
+		return createMemoryStore({ data });
+	}
 });
-
-/**
- * A utility function that takes an array of data and returns a new instance of a MemoryStore
- * @param data The data used to populate the new store
- */
-export function fromArray<T>(data: T[]): MemoryStore<T> {
-	return createMemoryStore({ data });
-};
 
 export default createMemoryStore;

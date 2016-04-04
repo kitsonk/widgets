@@ -4,14 +4,13 @@ import { Handle } from 'dojo-core/interfaces';
 import WeakMap from 'dojo-core/WeakMap';
 import { Position, insertInList } from '../util/lang';
 import createDestroyable, { Destroyable } from './createDestroyable';
+import { Renderable } from './createRenderable';
 
 export interface ParentMixinOptions<C extends Child> {
 	children?: C[];
 }
 
-export interface Child extends Destroyable {
-	parent?: ParentMixin<any>;
-}
+export interface Child extends Renderable { }
 
 export interface ParentMixin<C> extends Destroyable {
 	/**
@@ -29,6 +28,11 @@ export interface ParentMixin<C> extends Destroyable {
 	 * @param children The children to append
 	 */
 	append(children: C[]): Handle;
+
+	/**
+	 * Remove all children (but don't destory them)
+	 */
+	clear(): void;
 
 	/**
 	 * Insert a child in a specific position, providing the reference if required
@@ -113,6 +117,15 @@ const createParentMixin: ParentMixinFactory = compose({
 			childrenMap.set(parent, insertInList(childrenMap.get(parent), child, position, reference));
 			child.parent = parent;
 			return getRemoveHandle(parent, child);
+		},
+
+		clear(): void {
+			const parent: ParentMixin<Child> = this;
+			const children = childrenMap.get(parent);
+			if (children) {
+				children.forEach((child) => { child.parent === undefined; });
+				childrenMap.set(parent, List<Child>());
+			}
 		}
 	})
 	.mixin({

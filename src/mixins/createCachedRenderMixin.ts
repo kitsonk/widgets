@@ -28,7 +28,7 @@ export interface CachedRenderState extends State {
 	styles?: StylesHash;
 }
 
-export interface CachedRenderParent extends ParentMixin<Renderable> {
+export interface CachedRenderParent extends ParentMixin<any> {
 	/**
 	 * Invalidate the widget so that it will recalculate on its next render
 	 */
@@ -60,7 +60,7 @@ export interface CachedRenderMixin<S extends CachedRenderState> extends Stateful
 
 	styles: StylesHash;
 
-	parent: CachedRenderParent;
+	parent?: CachedRenderParent;
 
 	on(type: 'statechange', listener: EventedListener<StateChangeEvent<S>>): Handle;
 	on(type: string, listener: EventedListener<EventObject>): Handle;
@@ -101,6 +101,7 @@ const createCachedRenderMixin: ComposeFactory<CachedRenderMixin<CachedRenderStat
 				}
 				props.classes = classes;
 				props.styles = cachedRender.styles || {};
+				props.key = cachedRender;
 				if (overrides) {
 					assign(props, overrides);
 				}
@@ -173,9 +174,11 @@ const createCachedRenderMixin: ComposeFactory<CachedRenderMixin<CachedRenderStat
 
 			parent: <CachedRenderParent> null
 		},
-		initialize(instance: CachedRenderMixin<CachedRenderState>) {
-			dirtyMap.set(instance, true);
-			shadowClasses.set(instance, []);
+		initialize(instance) {
+			/* at this point, casting instance as the final type blows up the type inference, so the only choice is to
+			 * cast as any */
+			dirtyMap.set(<any> instance, true);
+			shadowClasses.set(<any> instance, []);
 		}
 	})
 	.mixin({

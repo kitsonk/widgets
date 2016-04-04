@@ -13,7 +13,7 @@ export interface ResizePanelState extends WidgetState, ContainerMixinState {
 	width?: string;
 }
 
-export interface ResizePanelOptions extends WidgetOptions<ResizePanelState>, ContainerMixinOptions<Renderable, ResizePanelState> { }
+export interface ResizePanelOptions extends WidgetOptions<ResizePanelState>, ContainerMixinOptions<ResizePanelState> { }
 
 export interface ResizePanel extends Widget<ResizePanelState>, ContainerMixin<Renderable, ResizePanelState> {
 	tagNames: {

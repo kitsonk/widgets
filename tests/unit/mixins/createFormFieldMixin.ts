@@ -48,14 +48,26 @@ registerSuite({
 			}
 		});
 
-		assert.deepEqual(formfield.getNodeAttributes(), { type: 'foo', value: 'bar', name: 'baz', classes: {}, styles: {} });
+		let nodeAttributes = formfield.getNodeAttributes();
+		assert.strictEqual(nodeAttributes['type'], 'foo');
+		assert.strictEqual(nodeAttributes['value'], 'bar');
+		assert.strictEqual(nodeAttributes['name'], 'baz');
+		assert.isUndefined(nodeAttributes['disabled']);
 
 		formfield.setState({ disabled: true });
 
-		assert.deepEqual(formfield.getNodeAttributes(), { type: 'foo', value: 'bar', name: 'baz', disabled: 'disabled', classes: {}, styles: {} });
+		nodeAttributes = formfield.getNodeAttributes();
+		assert.strictEqual(nodeAttributes['type'], 'foo');
+		assert.strictEqual(nodeAttributes['value'], 'bar');
+		assert.strictEqual(nodeAttributes['name'], 'baz');
+		assert.strictEqual(nodeAttributes['disabled'], 'disabled');
 
 		formfield.setState({ disabled: false });
 
-		assert.deepEqual(formfield.getNodeAttributes(), { type: 'foo', value: 'bar', name: 'baz', classes: {}, styles: {} });
+		nodeAttributes = formfield.getNodeAttributes();
+		assert.strictEqual(nodeAttributes['type'], 'foo');
+		assert.strictEqual(nodeAttributes['value'], 'bar');
+		assert.strictEqual(nodeAttributes['name'], 'baz');
+		assert.isUndefined(nodeAttributes['disabled']);
 	}
 });

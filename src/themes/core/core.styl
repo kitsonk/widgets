@@ -33,6 +33,58 @@ dojo-panel-resize {
 	z-index: 2;
 }
 
+dojo-panel-tabbed {
+
+	> ul {
+		display: flex;
+		user-select: none;
+		list-style: none;
+		margin: 0;
+		padding-left: 0;
+	}
+
+	& > ul > li {
+		position: relative;
+		padding-left: 10px;
+		padding-right: 24px;
+		user-drag: element;
+		flex: 1;
+		max-width: 175px;
+		min-width: 40px;
+
+		&.active {
+			flex: 2;
+			width: fit-content;
+
+			.tab-label {
+				padding-right: 10px;
+			}
+		}
+
+		.tab-label {
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			cursor: default;
+		}
+
+		.tab-close {
+			position: absolute;
+			top: 1px;
+			right: 10px;
+			cursor: default;
+		}
+	}
+
+	& > .panels > * {
+		display: none;
+	}
+
+	& > .panels > .visible {
+		display: block;
+	}
+}
+
 .fixed {
 	flex: 0;
 }

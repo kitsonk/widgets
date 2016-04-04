@@ -2,6 +2,8 @@
 @import '../core/core';
 @import url("https://fonts.googleapis.com/css?family=Noto+Sans:400,700,400italic,700italic");
 
+dojo-red = #fc5b3a;
+
 .basic {
 	font-family: 'Noto Sans', sans-serif;
 	font-size: 14px;
@@ -16,7 +18,7 @@
 		cursor: pointer;
 		transition: all 0.05s;
 		color: #fff;
-		background: #fc5b3a;
+		background-color: dojo-red;
 		font-size: 0.95em;
 		min-width: 5em;
 		box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
@@ -59,7 +61,7 @@
 
 		&:focus {
 			border-width: 0 0 2px;
-			border-color: #fc5b3a;
+			border-color: dojo-red;
 			transition: all 0.05s;
 		}
 	}
@@ -77,6 +79,62 @@
 
 		li {
 			list-style: none;
+		}
+	}
+
+	dojo-panel-tabbed {
+		flex-grow: 1;
+
+		border-bottom: 1px solid #999;
+
+		> ul > li {
+			line-height: 40px;
+			font-size: 12px;
+			background-color: #ddd;
+			border-left: 1px solid #fff;
+			border-right: 1px solid #fff;
+			border-radius: 0.2em 0.2em 0 0;
+			transition: background-color 0.05s;
+
+			.tab-label {
+				color: #999;
+				transition: color 0.05s;
+
+				&:hover {
+					color: #000;
+					transition: color 0.05s;
+				}
+			}
+
+			.tab-close {
+				color: #999;
+				transition: color 0.05s;
+
+				&:hover {
+					color: #000;
+					transition: color 0.05s;
+				}
+			}
+
+			&.active {
+				background-color: dojo-red;
+				transition: background-color 0.05s;
+
+				.tab-label {
+					color: #fff;
+					transition: color 0.05s;
+				}
+
+				.tab-close {
+					color: #ccc;
+					transition: color 0.05s;
+
+					&:hover {
+						color: #fff;
+						transition: color 0.05s;
+					}
+				}
+			}
 		}
 	}
 }

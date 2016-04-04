@@ -5,7 +5,7 @@ import { Renderable } from './mixins/createRenderable';
 
 export interface LayoutContainerState extends WidgetState, ContainerMixinState { }
 
-export interface LayoutContainerOptions extends WidgetOptions<LayoutContainerState>, ContainerMixinOptions<Renderable, LayoutContainerState> { }
+export interface LayoutContainerOptions extends WidgetOptions<LayoutContainerState>, ContainerMixinOptions<LayoutContainerState> { }
 
 export interface LayoutContainer extends Widget<LayoutContainerState>, ContainerMixin<Renderable, LayoutContainerState> { }
 

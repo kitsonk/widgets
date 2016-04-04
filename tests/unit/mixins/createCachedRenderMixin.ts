@@ -29,7 +29,7 @@ registerSuite({
 		nodeAttributes.onclick();
 		assert.strictEqual(count, 1);
 		assert.deepEqual(nodeAttributes.classes, { bar: true });
-		assert.strictEqual(Object.keys(nodeAttributes).length, 4);
+		assert.strictEqual(Object.keys(nodeAttributes).length, 5);
 
 		nodeAttributes = cachedRender.getNodeAttributes({
 			name: 'foo',
@@ -40,7 +40,7 @@ registerSuite({
 		assert.strictEqual(nodeAttributes.name, 'foo');
 		assert.strictEqual(nodeAttributes.id, 'bar');
 		assert.deepEqual(nodeAttributes.classes, { foo: false });
-		assert.strictEqual(Object.keys(nodeAttributes).length, 5);
+		assert.strictEqual(Object.keys(nodeAttributes).length, 6);
 	},
 	'getChildrenNodes()'() {
 		const cachedRender = createCachedRenderMixin();
@@ -65,12 +65,9 @@ registerSuite({
 		assert.notStrictEqual(result2, result4);
 		assert.deepEqual(result1, result3);
 		assert.deepEqual(result2, result4);
-		assert.deepEqual(result1, {vnodeSelector: 'div',
-			properties: { id: 'foo', classes: {}, styles: {} },
-			children: undefined,
-			text: 'foo',
-			domNode: null
-		});
+		assert.strictEqual(result1.vnodeSelector, 'div');
+		assert.strictEqual(result1.properties.id, 'foo');
+		assert.strictEqual(result1.text, 'foo');
 	},
 	'invalidate invalidates parent projector'() {
 		let count = 0;

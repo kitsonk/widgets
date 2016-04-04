@@ -14,30 +14,95 @@ import createParentMixin, { ParentMixin, ParentMixinOptions, Child } from './mix
 global.requestAnimationFrame = global.requestAnimationFrame || global.window.requestAnimationFrame;
 
 export interface ProjectorOptions extends ParentMixinOptions<RenderableChild>, EventedOptions {
+	/**
+	 * The root element for the projector
+	 */
 	root?: Element;
+
+	/**
+	 * If `true`, automatically attach to the DOM during creation
+	 */
+	autoAttach?: boolean;
+
+	/**
+	 * If `true`, append instead of merge when attaching to the projector to the DOM
+	 *
+	 * Only applies if `autoAttach` is `true`
+	 */
+	append?: boolean;
 }
 
 export interface RenderableChild extends Child {
+	/**
+	 * Returns a VNode which represents the DOM of the item
+	 */
 	render(): VNode;
 }
 
 export interface Projector extends VNodeEvented, ParentMixin<RenderableChild> {
+	/**
+	 * Get the projector's VNode attributes
+	 */
 	getNodeAttributes(overrides?: VNodeProperties): VNodeProperties;
+
+	/**
+	 * Returns a VNode which represents the DOM for the projector
+	 */
 	render(): VNode;
+
+	/**
+	 * Attach the projector to the DOM and return a handle to detach it.
+	 * @param append If true, it will append to the root instead of the default of merging
+	 */
 	attach(append?: boolean): Handle;
+
+	/**
+	 * Inform the projector that it is in a dirty state and should re-render.  Calling event handles will automatically
+	 * schedule a re-render.
+	 */
 	invalidate(): void;
+
+	/**
+	 * If unattached, set the root element for the projector.
+	 * @param root The Element that should serve as the root for the projector
+	 */
 	setRoot(root: Element): void;
+
+	/**
+	 * The native maquette Projector that is being managed
+	 */
 	projector: MaquetteProjector;
+
+	/**
+	 * When appending, what tag name should be used
+	 */
 	tagName?: string;
+
+	/**
+	 * An array of classes that should be applied to the root of the projector
+	 */
 	classes?: string[];
+
+	/**
+	 * A hash of inline styles that should be applied to the root of the projector
+	 */
 	styles?: { [style: string]: string; };
+
+	/**
+	 * A reference to the document that the projector is attached to
+	 */
 	document: Document;
+
+	/**
+	 * The current state of the projector
+	 */
+	state: ProjectorState;
 }
 
 export interface ProjectorFactory extends ComposeFactory<Projector, ProjectorOptions> { }
 
 export enum ProjectorState {
-	Attached,
+	Attached = 1,
 	Detached
 };
 
@@ -104,8 +169,13 @@ export const createProjector = compose<any, ProjectorOptions>({
 			});
 		},
 		invalidate(): void {
-			const projectorData = projectorDataMap.get(this);
+			const projector: Projector = this;
+			const projectorData = projectorDataMap.get(projector);
 			if (projectorData.state === ProjectorState.Attached) {
+				projector.emit({
+					type: 'schedulerender',
+					target: projector
+				});
 				projectorData.projector.scheduleRender();
 			}
 		},
@@ -122,6 +192,11 @@ export const createProjector = compose<any, ProjectorOptions>({
 		get document(): Document {
 			const projectorData = projectorDataMap.get(this);
 			return projectorData && projectorData.root && projectorData.root.ownerDocument;
+		},
+
+		get state(): ProjectorState {
+			const projectorData = projectorDataMap.get(this);
+			return projectorData && projectorData.state;
 		}
 	})
 	.mixin({
@@ -134,11 +209,23 @@ export const createProjector = compose<any, ProjectorOptions>({
 				root,
 				state: ProjectorState.Detached
 			});
+			if (options && options.autoAttach) {
+				instance.attach(options && options.append);
+			}
+		},
+		aspectAdvice: {
+			after: {
+				clear(): void {
+					const projector: Projector = this;
+					projector.invalidate();
+				}
+			}
 		}
 	})
 	.mixin({
 		mixin: createVNodeEvented,
 		initialize(instance: Projector) {
+			/* We have to stub out listeners for Maquette, otherwise it won't allow us to change them down the road */
 			instance.on('touchend', function () {});
 			instance.on('touchmove', function () {});
 		}

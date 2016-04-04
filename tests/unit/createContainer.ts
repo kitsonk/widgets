@@ -24,26 +24,10 @@ registerSuite({
 	'render()'() {
 		const container = createContainer();
 		container.append(createContainer());
-		assert.deepEqual(container.render(), {
-			vnodeSelector: 'dojo-container',
-			properties: {
-				classes: {},
-				styles: {}
-			},
-			children: [
-				{
-					vnodeSelector: 'dojo-container',
-					properties: {
-						classes: {},
-						styles: {}
-					},
-					children: [],
-					text: undefined,
-					domNode: null
-				}
-			],
-			text: undefined,
-			domNode: null
-		});
+		const render = container.render();
+		assert.strictEqual(render.vnodeSelector, 'dojo-container');
+		assert.strictEqual(render.children.length, 1);
+		assert.isUndefined(render.text);
+		assert.isNull(render.domNode);
 	}
 });

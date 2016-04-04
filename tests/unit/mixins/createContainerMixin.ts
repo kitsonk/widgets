@@ -2,6 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import createContainerMixin from 'src/mixins/createContainerMixin';
 import createRenderable from 'src/mixins/createRenderable';
+import { VNode } from 'maquette/maquette';
 
 registerSuite({
 	name: 'mixins/createContainerMixin',
@@ -140,18 +141,11 @@ registerSuite({
 			]
 		});
 
-		assert.deepEqual(container.getChildrenNodes(), [
-			'foo',
-			{
-				vnodeSelector: 'div',
-				properties: {
-					classes: {},
-					styles: {}
-				},
-				children: undefined,
-				text: 'bar',
-				domNode: null
-			}
-		]);
+		const childrenNodes = container.getChildrenNodes();
+		assert.strictEqual(childrenNodes[0], 'foo');
+		assert.isObject(childrenNodes[1]);
+		assert.strictEqual((<VNode> childrenNodes[1]).vnodeSelector, 'div');
+		assert.strictEqual((<VNode> childrenNodes[1]).text, 'bar');
+		assert.isUndefined((<VNode> childrenNodes[1]).children);
 	}
 });

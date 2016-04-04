@@ -15,7 +15,7 @@ export interface RenderableOptions {
 
 	tagName?: string;
 
-	parent?: ParentMixin<Renderable>;
+	parent?: ParentMixin<any>;
 }
 
 export interface Renderable extends Destroyable {
@@ -26,7 +26,7 @@ export interface Renderable extends Destroyable {
 
 	tagName: string;
 
-	parent: ParentMixin<Renderable>;
+	parent?: ParentMixin<this>;
 }
 
 export interface RenderableFactory extends ComposeFactory<Renderable, RenderableOptions> { }
@@ -38,9 +38,7 @@ export function isRenderable(value: any): value is Renderable {
 const createRenderable: RenderableFactory = compose({
 		render: <RenderFunction> null,
 
-		tagName: 'div',
-
-		parent: <ParentMixin<Renderable>> null
+		tagName: 'div'
 	}, (instance: Renderable, options: RenderableOptions) => {
 		if (options && options.tagName) {
 			instance.tagName = options.tagName;

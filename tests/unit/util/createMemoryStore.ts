@@ -1,6 +1,6 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import createMemoryStore, { fromArray } from 'src/util/createMemoryStore';
+import createMemoryStore from 'src/util/createMemoryStore';
 
 registerSuite({
 	name: 'util/createMemoryStore',
@@ -104,7 +104,7 @@ registerSuite({
 			});
 	},
 	'static fromArray()'() {
-		const store = fromArray([
+		const store = createMemoryStore.fromArray([
 			{ id: 1, foo: 'bar' },
 			{ id: 2, foo: 'baz' },
 			{ id: 3, foo: 'qat' },
