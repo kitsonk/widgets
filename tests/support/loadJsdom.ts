@@ -19,4 +19,6 @@ global.document = doc;
 /* Assign a global window as well */
 global.window = doc.defaultView;
 
+export default doc;
+
 console.log('Loaded JSDOM...');

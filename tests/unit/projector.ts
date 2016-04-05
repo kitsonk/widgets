@@ -1,3 +1,4 @@
+import 'dojo/has!host-node?../support/loadJsdom';
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import projector from 'src/projector';
@@ -20,20 +21,22 @@ registerSuite({
 		});
 		projector.append(renderable);
 		const attachHandle = projector.attach();
-		assert.strictEqual(document.body.childNodes.length, childNodeLength + 1, 'child should have been added');
-		assert.strictEqual((<HTMLElement> document.body.lastChild).innerHTML, nodeText);
-		assert.strictEqual((<HTMLElement> document.body.lastChild).tagName.toLowerCase(), 'h2');
-		nodeText = 'bar';
-		projector.invalidate();
 		setTimeout(() => {
+			assert.strictEqual(document.body.childNodes.length, childNodeLength + 1, 'child should have been added');
 			assert.strictEqual((<HTMLElement> document.body.lastChild).innerHTML, nodeText);
-			renderable.destroy().then(() => {
-				projector.invalidate();
-				setTimeout(dfd.callback(() => {
-					assert.strictEqual(document.body.childNodes.length, childNodeLength, 'child should have been removed');
-					attachHandle.destroy();
-				}), 150);
-			});
-		}, 150);
+			assert.strictEqual((<HTMLElement> document.body.lastChild).tagName.toLowerCase(), 'h2');
+			nodeText = 'bar';
+			projector.invalidate();
+			setTimeout(() => {
+				assert.strictEqual((<HTMLElement> document.body.lastChild).innerHTML, nodeText);
+				renderable.destroy().then(() => {
+					projector.invalidate();
+					setTimeout(dfd.callback(() => {
+						assert.strictEqual(document.body.childNodes.length, childNodeLength, 'child should have been removed');
+						attachHandle.destroy();
+					}), 150);
+				});
+			}, 150);
+		}, 1);
 	}
 });
