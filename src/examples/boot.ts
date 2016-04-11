@@ -1,6 +1,4 @@
-declare var require: DojoLoader.RootRequire;
-
-require.config({
+(<any> require).config({
 	baseUrl: '../../..',
 	packages: [
 		{ name: 'src', location: '_build/src' },

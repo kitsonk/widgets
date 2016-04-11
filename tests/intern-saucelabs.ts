@@ -13,6 +13,6 @@ export const environments = [
 ];
 
 /* SauceLabs supports more max concurrency */
-export const maxConcurrency = 5;
+export const maxConcurrency = 4;
 
 export const tunnel = 'SauceLabsTunnel';

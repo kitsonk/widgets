@@ -60,7 +60,7 @@ export const loaderOptions = {
 		{ name: 'src', location: '_build/src' },
 		{ name: 'tests', location: '_build/tests' },
 		{ name: 'node_modules', location: '_build/node_modules' },
-		{ name: 'dojo', location: 'node_modules/intern/node_modules/dojo' },
+		{ name: 'dojo', location: 'node_modules/intern/browser_modules/dojo' },
 		{ name: 'dojo-actions', location: 'node_modules/dojo-actions' },
 		{ name: 'dojo-compose', location: 'node_modules/dojo-compose' },
 		{ name: 'dojo-core', location: 'node_modules/dojo-core' },

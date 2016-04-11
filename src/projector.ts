@@ -74,6 +74,11 @@ export interface Projector extends VNodeEvented, ParentMixin<RenderableChild> {
 	projector: MaquetteProjector;
 
 	/**
+	 * The root of the projector
+	 */
+	root: Element;
+
+	/**
 	 * When appending, what tag name should be used
 	 */
 	tagName?: string;
@@ -117,13 +122,10 @@ interface ProjectorData {
 const projectorDataMap = new WeakMap<Projector, ProjectorData>();
 
 const noopHandle = { destroy() { } };
+const emptyVNode = h('div');
+const noopVNode = function(): VNode { return emptyVNode; };
 
-function detach(projectorData: ProjectorData): void {
-	projectorData.attachHandle = noopHandle;
-	projectorData.projector.detach(projectorData.boundRender);
-}
-
-export const createProjector = compose<any, ProjectorOptions>({
+export const createProjector: ProjectorFactory = compose<any, ProjectorOptions>({
 		getNodeAttributes(overrides?: VNodeProperties): VNodeProperties {
 			/* TODO: This is the same logic as createCachedRenderMixin, merge somehow */
 			const projector: Projector = this;
@@ -162,11 +164,29 @@ export const createProjector = compose<any, ProjectorOptions>({
 				(append ? projectorData.projector.append : projectorData.projector.merge)(projectorData.root, projectorData.boundRender);
 			});
 			projectorData.state = ProjectorState.Attached;
-			return projector.own({
+			projectorData.attachHandle = projector.own({
 				destroy() {
-					detach(projectorData);
+					if (projectorData.state === ProjectorState.Attached) {
+						projectorData.projector.stop();
+						try {
+							/* Sometimes Maquette can't seem to find function */
+							projectorData.projector.detach(projectorData.boundRender);
+						}
+						catch (e) {
+							if (e.message !== 'renderMaquetteFunction was not found') {
+								throw e;
+							}
+							/* else, swallow */
+						}
+						/* for some reason, Maquette still tryies to call this in some situations, so the noopVNode is
+						 * used to return an empty structure */
+						projectorData.boundRender = noopVNode;
+						projectorData.state = ProjectorState.Detached;
+					}
+					projectorData.attachHandle = noopHandle;
 				}
 			});
+			return projectorData.attachHandle;
 		},
 		invalidate(): void {
 			const projector: Projector = this;
@@ -184,11 +204,18 @@ export const createProjector = compose<any, ProjectorOptions>({
 			if (projectorData.state === ProjectorState.Attached) {
 				throw new Error('Projector already attached, cannot change root element');
 			}
-			projectorData.root === root;
+			projectorData.root = root;
 		},
+
+		get root(): Element {
+			const projectorData = projectorDataMap.get(this);
+			return projectorData && projectorData.root;
+		},
+
 		get projector(): MaquetteProjector {
 			return projectorDataMap.get(this).projector;
 		},
+
 		get document(): Document {
 			const projectorData = projectorDataMap.get(this);
 			return projectorData && projectorData.root && projectorData.root.ownerDocument;
